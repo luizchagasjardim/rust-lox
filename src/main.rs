@@ -10,6 +10,8 @@ use result::*;
 mod scanner;
 use scanner::*;
 
+mod token;
+
 /// Lox interpreter written in Rust
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]

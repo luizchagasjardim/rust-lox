@@ -1,5 +1,4 @@
-#[derive(Debug)]
-pub struct Tokens;
+use crate::token::Tokens;
 
 pub struct Scanner {
     source: String,
@@ -7,9 +6,7 @@ pub struct Scanner {
 
 impl Scanner {
     pub fn new(source: String) -> Scanner {
-        Scanner {
-            source,
-        }
+        Scanner { source }
     }
     pub fn scan_tokens(self) -> Vec<Tokens> {
         unimplemented!();
