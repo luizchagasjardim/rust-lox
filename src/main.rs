@@ -2,9 +2,6 @@
 
 extern crate exitcode;
 
-use std::io::{stdin, stdout, Write};
-use std::process::exit;
-
 use clap::Parser;
 
 mod result;
@@ -19,12 +16,15 @@ struct Args {
 }
 
 fn main() {
+    use std::process::exit;
+
     let args = Args::parse();
-    let res = match args.file_path {
+    if let Err(error) = match args.file_path {
         None => repl(),
         Some(file) => run_file(file),
-    };
-    exit(exit_code(res));
+    } {
+        exit(error.exit_code());
+    }
 }
 
 fn repl() -> Result<()> {
@@ -36,10 +36,22 @@ fn repl() -> Result<()> {
 }
 
 fn run_file(path: String) -> Result<()> {
-    unimplemented!("path={}", path);
+    use std::fs::File;
+    use std::io::{BufRead, BufReader};
+
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    for line in reader.lines() {
+        let result = eval(&line?)?;
+        println!("{}", result);
+    }
+
+    Ok(())
 }
 
 fn read() -> Result<String> {
+    use std::io::{stdin, stdout, Write};
+
     print!(">");
     stdout().flush().unwrap();
     let mut input = String::new();
