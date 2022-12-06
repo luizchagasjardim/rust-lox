@@ -7,6 +7,9 @@ use clap::Parser;
 mod result;
 use result::*;
 
+mod scanner;
+use scanner::*;
+
 /// Lox interpreter written in Rust
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -30,7 +33,7 @@ fn main() {
 fn repl() -> Result<()> {
     loop {
         let input = read()?;
-        let result = eval(&input)?;
+        let result = eval(input)?;
         println!("{}", result);
     }
 }
@@ -42,7 +45,7 @@ fn run_file(path: String) -> Result<()> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
     for line in reader.lines() {
-        let result = eval(&line?)?;
+        let result = eval(line?)?;
         println!("{}", result);
     }
 
@@ -62,6 +65,13 @@ fn read() -> Result<String> {
     Ok(input.into())
 }
 
-fn eval(input: &String) -> Result<String> {
-    Ok(input.clone()) //TODO
+fn eval(source: String) -> Result<String> {
+    let scanner = Scanner::new(source);
+    let tokens = scanner.scan_tokens();
+
+    for token in tokens.iter() {
+        println!("token={:?}", token);
+    }
+
+    todo!();
 }
