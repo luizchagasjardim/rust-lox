@@ -1,22 +1,21 @@
 use crate::result::*;
 use crate::token::*;
 
-pub struct Scanner {
-    source: String,
+pub struct Scanner<'a> {
     line_number: usize,
+    chars: std::iter::Peekable::<std::iter::Enumerate::<std::str::Chars::<'a>>>,
 }
 
-impl Scanner {
-    pub fn new(source: String, line_number: usize) -> Scanner {
+impl  Scanner<'_> {
+    pub fn new<'a>(source: &'a str, line_number: usize) -> Scanner<'a> {
         Scanner {
-            source,
             line_number,
+            chars: source.chars().enumerate().peekable(),
         }
     }
-    pub fn scan_tokens(&self) -> Result<Vec<Token>> {
+    pub fn scan_tokens(mut self) -> Result<Vec<Token>> {
         let mut tokens = Vec::new();
-        let mut chars = self.source.chars().enumerate().peekable();
-        while let Some(token) = self.scan_token(&mut chars) {
+        while let Some(token) = self.scan_token() {
             tokens.push(token?);
         }
         tokens.push(Token {
@@ -25,11 +24,8 @@ impl Scanner {
         });
         Ok(tokens)
     }
-    fn scan_token(
-        &self,
-        chars: &mut std::iter::Peekable<std::iter::Enumerate<std::str::Chars<'_>>>,
-    ) -> Option<Result<Token>> {
-        let (position, character) = chars.next()?;
+    fn scan_token(&mut self) -> Option<Result<Token>> {
+        let (position, character) = self.chars.next()?;
         let start = position;
         let mut end = position + 1;
         let token_type = match character {
@@ -44,7 +40,7 @@ impl Scanner {
             ';' => TokenType::Semicolon,
             '*' => TokenType::Star,
             '!' => {
-                if self.advance_if_matches('=', chars) {
+                if self.advance_if_matches('=') {
                     end += 1;
                     TokenType::BangEqual
                 } else {
@@ -52,7 +48,7 @@ impl Scanner {
                 }
             }
             '=' => {
-                if self.advance_if_matches('=', chars) {
+                if self.advance_if_matches('=') {
                     end += 1;
                     TokenType::EqualEqual
                 } else {
@@ -60,7 +56,7 @@ impl Scanner {
                 }
             }
             '<' => {
-                if self.advance_if_matches('=', chars) {
+                if self.advance_if_matches('=') {
                     end += 1;
                     TokenType::LessEqual
                 } else {
@@ -68,7 +64,7 @@ impl Scanner {
                 }
             }
             '>' => {
-                if self.advance_if_matches('=', chars) {
+                if self.advance_if_matches('=') {
                     end += 1;
                     TokenType::GreaterEqual
                 } else {
@@ -76,8 +72,8 @@ impl Scanner {
                 }
             }
             '/' => {
-                if self.advance_if_matches('/', chars) {
-                    while chars.next().is_some() {}
+                if self.advance_if_matches('/') {
+                    while self.chars.next().is_some() {}
                     return None;
                 } else {
                     TokenType::Slash
@@ -96,18 +92,17 @@ impl Scanner {
             location,
         }))
     }
-    fn advance_if_matches(
-        &self,
+    fn  advance_if_matches(
+        &mut self,
         expected_next: char,
-        chars: &mut std::iter::Peekable<std::iter::Enumerate<std::str::Chars<'_>>>,
     ) -> bool {
-        let Some((_, next)) = chars.peek() else {
+        let Some((_, next)) = self.chars.peek() else {
             return false;
         };
         if next != &expected_next {
             return false;
         }
-        chars.next();
+        self.chars.next();
         true
     }
 }

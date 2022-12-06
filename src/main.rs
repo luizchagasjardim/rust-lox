@@ -36,7 +36,7 @@ fn main() {
 fn repl() -> Result<()> {
     for line_number in 0..usize::MAX {
         let input = read()?;
-        let result = eval(input, line_number)?;
+        let result = eval(&input, line_number)?;
         println!("{}", result);
     }
     Err(Error::OutOfLineNumbers)
@@ -49,7 +49,7 @@ fn run_file(path: String) -> Result<()> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
     for (line_number, line) in reader.lines().enumerate() {
-        let result = eval(line?, line_number)?;
+        let result = eval(&line?, line_number)?;
         println!("{}", result);
     }
 
@@ -69,8 +69,8 @@ fn read() -> Result<String> {
     Ok(input.into())
 }
 
-fn eval(source: String, line_number: usize) -> Result<String> {
-    let scanner = Scanner::new(source, line_number);
+fn eval(source: &String, line_number: usize) -> Result<String> {
+    let scanner = Scanner::new(&source, line_number);
     let tokens = scanner.scan_tokens()?;
 
     for token in tokens.iter() {
