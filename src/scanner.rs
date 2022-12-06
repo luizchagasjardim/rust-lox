@@ -75,6 +75,14 @@ impl Scanner {
                     TokenType::Greater
                 }
             }
+            '/' => {
+                if self.advance_if_matches('/', chars) {
+                    while chars.next().is_some() {}
+                    return None;
+                } else {
+                    TokenType::Slash
+                }
+            }
             _ => {
                 return Some(Err(Error::UnexpectedCharacter {
                     character,
