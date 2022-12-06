@@ -1,4 +1,5 @@
-enum TokenType {
+#[derive(Debug)]
+pub enum TokenType {
     // Single-character tokens.
     LeftParen,
     RightParen,
@@ -45,4 +46,13 @@ enum TokenType {
 }
 
 #[derive(Debug)]
-pub struct Tokens;
+pub struct Token {
+    pub token_type: TokenType,
+    pub location: Location,
+}
+
+#[derive(Debug)]
+pub struct Location {
+    pub start: usize,
+    pub end: usize,
+}

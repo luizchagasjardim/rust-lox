@@ -1,11 +1,15 @@
 use std::io::Error as IoError;
 
+use crate::token::Location;
 use exitcode;
 
 #[derive(Debug)]
 pub enum Error {
     IoError(IoError),
     KeyboardInterrupt,
+    OutOfLineNumbers,
+    UnexpectedCharacter { character: char, location: Location },
+    UnexpectedEof,
 }
 
 impl Error {
@@ -13,6 +17,12 @@ impl Error {
         match &self {
             Error::IoError(_) => exitcode::IOERR,
             Error::KeyboardInterrupt => exitcode::OK,
+            Error::OutOfLineNumbers => exitcode::SOFTWARE,
+            Error::UnexpectedCharacter {
+                character: _,
+                location: _,
+            } => exitcode::USAGE,
+            Error::UnexpectedEof => exitcode::USAGE,
         }
     }
 }
