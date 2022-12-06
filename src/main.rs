@@ -2,10 +2,13 @@
 
 extern crate exitcode;
 
-use std::io::{Error as IoError, stdin};
+use std::io::{stdin, stdout, Write};
 use std::process::exit;
 
 use clap::Parser;
+
+mod result;
+use result::*;
 
 /// Lox interpreter written in Rust
 #[derive(Parser, Debug)]
@@ -17,38 +20,36 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    match args.file_path {
+    let res = match args.file_path {
         None => repl(),
         Some(file) => run_file(file),
     };
+    exit(exit_code(res));
 }
 
-fn repl() {
+fn repl() -> Result<()> {
     loop {
-        let Ok(input) = read() else {
-            exit(exitcode::USAGE);
-        };
-        let Ok(result) = eval(&input) else {
-            exit(exitcode::USAGE);
-        };
+        let input = read()?;
+        let result = eval(&input)?;
         println!("{}", result);
     }
 }
 
-fn run_file(path: String) {
+fn run_file(path: String) -> Result<()> {
     unimplemented!("path={}", path);
 }
 
-fn read() -> Result<String, IoError> {
+fn read() -> Result<String> {
+    print!(">");
+    stdout().flush().unwrap();
     let mut input = String::new();
-    if let Err(e) = stdin().read_line(&mut input) {
-        return Err(e);
-    }
-    Ok(input)
+    stdin().read_line(&mut input)?;
+    let Some(input) = input.lines().next() else {
+        return Err(Error::KeyboardInterrupt);
+    };
+    Ok(input.into())
 }
 
-struct EvalError;
-
-fn eval(input: &String) -> Result<String, EvalError> {
+fn eval(input: &String) -> Result<String> {
     Ok(input.clone()) //TODO
 }
