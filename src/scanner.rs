@@ -3,7 +3,7 @@ use crate::token::*;
 
 pub struct Scanner<'a> {
     line_number: usize,
-    chars: std::iter::Peekable::<std::iter::Enumerate<std::str::Chars<'a>>>,
+    chars: std::iter::Peekable<std::iter::Enumerate<std::str::Chars<'a>>>,
 }
 
 impl Scanner<'_> {
@@ -84,10 +84,7 @@ impl Scanner<'_> {
                 }));
             }
         };
-        Some(Ok(Token {
-            token_type,
-            start,
-        }))
+        Some(Ok(Token { token_type, start }))
     }
     fn advance_if_matches(&mut self, expected_next: char) -> bool {
         let Some((_, next)) = self.chars.peek() else {
@@ -98,5 +95,131 @@ impl Scanner<'_> {
         }
         self.chars.next();
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn scan_empty_line() {
+        let tokens = Scanner::new("", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![Token {
+                token_type: TokenType::EOF,
+                start: 0
+            }]
+        );
+    }
+
+    #[test]
+    fn scan_whitespace_line() {
+        let tokens = Scanner::new("\t ", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![Token {
+                token_type: TokenType::EOF,
+                start: 0
+            }]
+        );
+    }
+
+    #[test]
+    fn scan_comment_line() {
+        let tokens = Scanner::new("\t//comment", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![Token {
+                token_type: TokenType::EOF,
+                start: 0
+            }]
+        );
+    }
+
+    #[test]
+    fn scan_single_character_tokens() {
+        let tokens = Scanner::new("(}{,+)", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::LeftParen,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::RightBrace,
+                    start: 1
+                },
+                Token {
+                    token_type: TokenType::LeftBrace,
+                    start: 2
+                },
+                Token {
+                    token_type: TokenType::Comma,
+                    start: 3
+                },
+                Token {
+                    token_type: TokenType::Plus,
+                    start: 4
+                },
+                Token {
+                    token_type: TokenType::RightParen,
+                    start: 5
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_single_or_double_character_tokens() {
+        let tokens = Scanner::new("!(!= = >=< =", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Bang,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::LeftParen,
+                    start: 1
+                },
+                Token {
+                    token_type: TokenType::BangEqual,
+                    start: 2
+                },
+                Token {
+                    token_type: TokenType::Equal,
+                    start: 5
+                },
+                Token {
+                    token_type: TokenType::GreaterEqual,
+                    start: 7
+                },
+                Token {
+                    token_type: TokenType::Less,
+                    start: 9
+                },
+                Token {
+                    token_type: TokenType::Equal,
+                    start: 11
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
     }
 }
