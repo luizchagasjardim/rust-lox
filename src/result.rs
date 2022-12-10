@@ -18,15 +18,9 @@ impl Error {
             Error::IoError(_) => exitcode::IOERR,
             Error::KeyboardInterrupt => exitcode::OK,
             Error::OutOfLineNumbers => exitcode::SOFTWARE,
-            Error::UnexpectedCharacter {
-                character: _,
-                position: _,
-            } => exitcode::USAGE,
+            Error::UnexpectedCharacter { .. } => exitcode::USAGE,
             Error::UnexpectedEof => exitcode::USAGE,
-            Error::UnterminatedString {
-                string: _,
-                position: _,
-            } => exitcode::USAGE,
+            Error::UnterminatedString { .. } => exitcode::USAGE,
         }
     }
 }

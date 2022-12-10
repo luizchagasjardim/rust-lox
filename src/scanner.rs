@@ -259,4 +259,14 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn scan_unterminated_string() {
+        let tokens = Scanner::new("\"my unterminated string", 0).scan_tokens();
+        assert!(tokens.is_err());
+        assert!(matches!(
+            tokens.unwrap_err(),
+            Error::UnterminatedString { .. }
+        ));
+    }
 }
