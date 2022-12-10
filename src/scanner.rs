@@ -3,11 +3,11 @@ use crate::token::*;
 
 pub struct Scanner<'a> {
     line_number: usize,
-    chars: std::iter::Peekable::<std::iter::Enumerate::<std::str::Chars::<'a>>>,
+    chars: std::iter::Peekable::<std::iter::Enumerate<std::str::Chars<'a>>>,
 }
 
-impl  Scanner<'_> {
-    pub fn new<'a>(source: &'a str, line_number: usize) -> Scanner<'a> {
+impl Scanner<'_> {
+    pub fn new(source: &str, line_number: usize) -> Scanner {
         Scanner {
             line_number,
             chars: source.chars().enumerate().peekable(),
@@ -20,14 +20,14 @@ impl  Scanner<'_> {
         }
         tokens.push(Token {
             token_type: TokenType::EOF,
-            location: Location { start: 0, end: 0 },
+            location: Location { start: 0, length: 0 },
         });
         Ok(tokens)
     }
     fn scan_token(&mut self) -> Option<Result<Token>> {
         let (position, character) = self.chars.next()?;
         let start = position;
-        let mut end = position + 1;
+        let mut length = 1;
         let token_type = match character {
             '(' => TokenType::LeftParen,
             ')' => TokenType::RightParen,
@@ -41,7 +41,7 @@ impl  Scanner<'_> {
             '*' => TokenType::Star,
             '!' => {
                 if self.advance_if_matches('=') {
-                    end += 1;
+                    length += 1;
                     TokenType::BangEqual
                 } else {
                     TokenType::Bang
@@ -49,7 +49,7 @@ impl  Scanner<'_> {
             }
             '=' => {
                 if self.advance_if_matches('=') {
-                    end += 1;
+                    length += 1;
                     TokenType::EqualEqual
                 } else {
                     TokenType::Equal
@@ -57,7 +57,7 @@ impl  Scanner<'_> {
             }
             '<' => {
                 if self.advance_if_matches('=') {
-                    end += 1;
+                    length += 1;
                     TokenType::LessEqual
                 } else {
                     TokenType::Less
@@ -65,7 +65,7 @@ impl  Scanner<'_> {
             }
             '>' => {
                 if self.advance_if_matches('=') {
-                    end += 1;
+                    length += 1;
                     TokenType::GreaterEqual
                 } else {
                     TokenType::Greater
@@ -79,23 +79,29 @@ impl  Scanner<'_> {
                     TokenType::Slash
                 }
             }
+            ' ' | '\r' | '\t' | '\n' => {
+                todo!();
+            }
             _ => {
                 return Some(Err(Error::UnexpectedCharacter {
                     character,
-                    location: Location { start, end },
+                    location: Location {
+                        start,
+                        length,
+                    },
                 }));
             }
         };
-        let location = Location { start, end };
+        let location = Location {
+            start,
+            length,
+        };
         Some(Ok(Token {
             token_type,
             location,
         }))
     }
-    fn  advance_if_matches(
-        &mut self,
-        expected_next: char,
-    ) -> bool {
+    fn advance_if_matches(&mut self, expected_next: char) -> bool {
         let Some((_, next)) = self.chars.peek() else {
             return false;
         };
