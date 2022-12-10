@@ -269,4 +269,48 @@ mod tests {
             Error::UnterminatedString { .. }
         ));
     }
+
+    #[test]
+    fn scan_integer() {
+        let tokens = Scanner::new("123", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Number {
+                        value: 123.0,
+                        length: 3
+                    },
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_decimal() {
+        let tokens = Scanner::new("123.0", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Number {
+                        value: 123.0,
+                        length: 5
+                    },
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
 }
