@@ -25,8 +25,7 @@ impl Scanner<'_> {
         Ok(tokens)
     }
     fn scan_token(&mut self) -> Option<Result<Token>> {
-        let (position, character) = self.chars.next()?;
-        let start = position;
+        let (start, character) = self.chars.next()?;
         let token_type = match character {
             '(' => TokenType::LeftParen,
             ')' => TokenType::RightParen,
@@ -77,6 +76,15 @@ impl Scanner<'_> {
             ' ' | '\r' | '\t' | '\n' => {
                 return self.scan_token();
             }
+            '"' => match self.scan_string() {
+                Ok(string) => TokenType::String(string),
+                Err(string) => {
+                    return Some(Err(Error::UnterminatedString {
+                        string,
+                        position: start,
+                    }));
+                }
+            },
             _ => {
                 return Some(Err(Error::UnexpectedCharacter {
                     character,
@@ -95,6 +103,16 @@ impl Scanner<'_> {
         }
         self.chars.next();
         true
+    }
+    fn scan_string(&mut self) -> std::result::Result<String, String> {
+        let mut value = String::new();
+        while let Some((_, character)) = self.chars.next() {
+            if character == '"' {
+                return Ok(value);
+            }
+            value.push(character);
+        }
+        Err(value)
     }
 }
 
@@ -214,6 +232,25 @@ mod tests {
                 Token {
                     token_type: TokenType::Equal,
                     start: 11
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_string() {
+        let tokens = Scanner::new("\"my string\"", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::String("my string".to_string()),
+                    start: 0
                 },
                 Token {
                     token_type: TokenType::EOF,
