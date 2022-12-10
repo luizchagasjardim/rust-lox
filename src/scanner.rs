@@ -75,7 +75,7 @@ impl Scanner<'_> {
                 }
             }
             ' ' | '\r' | '\t' | '\n' => {
-                todo!();
+                return self.scan_token();
             }
             _ => {
                 return Some(Err(Error::UnexpectedCharacter {
