@@ -20,14 +20,13 @@ impl Scanner<'_> {
         }
         tokens.push(Token {
             token_type: TokenType::EOF,
-            location: Location { start: 0, length: 0 },
+            start: 0,
         });
         Ok(tokens)
     }
     fn scan_token(&mut self) -> Option<Result<Token>> {
         let (position, character) = self.chars.next()?;
         let start = position;
-        let mut length = 1;
         let token_type = match character {
             '(' => TokenType::LeftParen,
             ')' => TokenType::RightParen,
@@ -41,7 +40,6 @@ impl Scanner<'_> {
             '*' => TokenType::Star,
             '!' => {
                 if self.advance_if_matches('=') {
-                    length += 1;
                     TokenType::BangEqual
                 } else {
                     TokenType::Bang
@@ -49,7 +47,6 @@ impl Scanner<'_> {
             }
             '=' => {
                 if self.advance_if_matches('=') {
-                    length += 1;
                     TokenType::EqualEqual
                 } else {
                     TokenType::Equal
@@ -57,7 +54,6 @@ impl Scanner<'_> {
             }
             '<' => {
                 if self.advance_if_matches('=') {
-                    length += 1;
                     TokenType::LessEqual
                 } else {
                     TokenType::Less
@@ -65,7 +61,6 @@ impl Scanner<'_> {
             }
             '>' => {
                 if self.advance_if_matches('=') {
-                    length += 1;
                     TokenType::GreaterEqual
                 } else {
                     TokenType::Greater
@@ -85,20 +80,13 @@ impl Scanner<'_> {
             _ => {
                 return Some(Err(Error::UnexpectedCharacter {
                     character,
-                    location: Location {
-                        start,
-                        length,
-                    },
+                    position: start,
                 }));
             }
         };
-        let location = Location {
-            start,
-            length,
-        };
         Some(Ok(Token {
             token_type,
-            location,
+            start,
         }))
     }
     fn advance_if_matches(&mut self, expected_next: char) -> bool {

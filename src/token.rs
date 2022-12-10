@@ -1,6 +1,5 @@
 #[derive(Debug)]
 pub enum TokenType {
-    // Single-character tokens.
     LeftParen,
     RightParen,
     LeftBrace,
@@ -12,7 +11,6 @@ pub enum TokenType {
     Semicolon,
     Slash,
     Star,
-    // One or two character tokens.
     Bang,
     BangEqual,
     Equal,
@@ -21,11 +19,9 @@ pub enum TokenType {
     GreaterEqual,
     Less,
     LessEqual,
-    // Literals.
     Identifier,
     String,
     Number,
-    // Keywords.
     And,
     Class,
     Else,
@@ -45,14 +41,54 @@ pub enum TokenType {
     EOF,
 }
 
-#[derive(Debug)]
-pub struct Token {
-    pub token_type: TokenType,
-    pub location: Location,
+impl TokenType {
+    pub fn length(&self) -> usize {
+        match self {
+            TokenType::LeftParen => 1,
+            TokenType::RightParen => 1,
+            TokenType::LeftBrace => 1,
+            TokenType::RightBrace => 1,
+            TokenType::Comma => 1,
+            TokenType::Dot => 1,
+            TokenType::Minus => 1,
+            TokenType::Plus => 1,
+            TokenType::Semicolon => 1,
+            TokenType::Slash => 1,
+            TokenType::Star => 1,
+            TokenType::Bang => 1,
+            TokenType::BangEqual => 2,
+            TokenType::Equal => 1,
+            TokenType::EqualEqual => 2,
+            TokenType::Greater => 1,
+            TokenType::GreaterEqual => 2,
+            TokenType::Less => 1,
+            TokenType::LessEqual => 2,
+            TokenType::Identifier => todo!(),
+            TokenType::String => todo!(),
+            TokenType::Number => todo!(),
+            TokenType::And => todo!(),
+            TokenType::Class => todo!(),
+            TokenType::Else => todo!(),
+            TokenType::False => todo!(),
+            TokenType::Fun => todo!(),
+            TokenType::For => todo!(),
+            TokenType::If => todo!(),
+            TokenType::Nil => todo!(),
+            TokenType::Or => todo!(),
+            TokenType::Print => todo!(),
+            TokenType::Return => todo!(),
+            TokenType::Super => todo!(),
+            TokenType::This => todo!(),
+            TokenType::True => todo!(),
+            TokenType::Var => todo!(),
+            TokenType::While => todo!(),
+            TokenType::EOF => 0,
+        }
+    }
 }
 
 #[derive(Debug)]
-pub struct Location {
+pub struct Token {
+    pub token_type: TokenType,
     pub start: usize,
-    pub length: usize,
 }
