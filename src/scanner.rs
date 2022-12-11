@@ -802,4 +802,23 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn scan_identifier_starting_with_keyword() {
+        let tokens = Scanner::new("whileforandorvariable", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Identifier("whileforandorvariable".to_string()),
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
 }
