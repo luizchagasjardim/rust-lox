@@ -140,7 +140,6 @@ impl Scanner<'_> {
                 value += &fractional_part;
             }
         }
-        println!("scan number error {}", value);
         Ok((value.parse().unwrap(), value.len()))
     }
     fn scan_integer(&mut self) -> std::result::Result<String, String> {
@@ -369,5 +368,385 @@ mod tests {
             tokens.unwrap_err(),
             Error::UnterminatedNumber { .. }
         ));
+    }
+
+    #[test]
+    fn scan_keyword_and() {
+        let tokens = Scanner::new("and", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::And,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_class() {
+        let tokens = Scanner::new("class", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Class,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_else() {
+        let tokens = Scanner::new("else", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Else,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_false() {
+        let tokens = Scanner::new("false", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::False,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_fun() {
+        let tokens = Scanner::new("fun", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Fun,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_for() {
+        let tokens = Scanner::new("for", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::For,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_if() {
+        let tokens = Scanner::new("if", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::If,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_nil() {
+        let tokens = Scanner::new("nil", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Nil,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_or() {
+        let tokens = Scanner::new("or", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Or,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_print() {
+        let tokens = Scanner::new("print", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Print,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_return() {
+        let tokens = Scanner::new("return", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Return,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_super() {
+        let tokens = Scanner::new("super", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Super,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_this() {
+        let tokens = Scanner::new("this", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::This,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_true() {
+        let tokens = Scanner::new("true", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::True,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_var() {
+        let tokens = Scanner::new("var", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Var,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_keyword_while() {
+        let tokens = Scanner::new("while", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::While,
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_identifier() {
+        let tokens = Scanner::new("myvariable", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Identifier("myvariable".to_string()),
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_identifier_with_underscores() {
+        let tokens = Scanner::new("__my_var__iable_", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Identifier("__my_var__iable_".to_string()),
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_identifier_with_uppercase_letters() {
+        let tokens = Scanner::new("MyVariable", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Identifier("MyVariable".to_string()),
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn scan_identifier_with_number() {
+        let tokens = Scanner::new("my1variable", 0).scan_tokens();
+        assert!(tokens.is_ok());
+        assert_eq!(
+            tokens.unwrap(),
+            vec![
+                Token {
+                    token_type: TokenType::Identifier("my1variable".to_string()),
+                    start: 0
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    start: 0
+                }
+            ]
+        );
     }
 }
