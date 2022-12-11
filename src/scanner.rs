@@ -94,6 +94,44 @@ impl Scanner<'_> {
                     }));
                 }
             },
+            'a'..='z' | 'A'..='Z' | '_' => {
+                let identifier_or_keyword = self.scan_identifier_or_keyword(character);
+                if identifier_or_keyword == "and" {
+                    TokenType::And
+                } else if identifier_or_keyword == "class" {
+                    TokenType::Class
+                } else if identifier_or_keyword == "else" {
+                    TokenType::Else
+                } else if identifier_or_keyword == "false" {
+                    TokenType::False
+                } else if identifier_or_keyword == "fun" {
+                    TokenType::Fun
+                } else if identifier_or_keyword == "for" {
+                    TokenType::For
+                } else if identifier_or_keyword == "if" {
+                    TokenType::If
+                } else if identifier_or_keyword == "nil" {
+                    TokenType::Nil
+                } else if identifier_or_keyword == "or" {
+                    TokenType::Or
+                } else if identifier_or_keyword == "print" {
+                    TokenType::Print
+                } else if identifier_or_keyword == "return" {
+                    TokenType::Return
+                } else if identifier_or_keyword == "super" {
+                    TokenType::Super
+                } else if identifier_or_keyword == "this" {
+                    TokenType::This
+                } else if identifier_or_keyword == "true" {
+                    TokenType::True
+                } else if identifier_or_keyword == "var" {
+                    TokenType::Var
+                } else if identifier_or_keyword == "while" {
+                    TokenType::While
+                } else {
+                    TokenType::Identifier(identifier_or_keyword)
+                }
+            }
             _ => {
                 return Some(Err(Error::UnexpectedCharacter {
                     character,
@@ -159,6 +197,21 @@ impl Scanner<'_> {
             }
         }
         Ok(value)
+    }
+    fn scan_identifier_or_keyword(&mut self, first_char: char) -> String {
+        let mut value = String::from(first_char);
+        while let Some((_, character)) = self.chars.peek() {
+            match character {
+                'a'..='z' | 'A'..='Z' | '_' | '0'..='9' => {
+                    value.push(*character);
+                    self.chars.next();
+                }
+                _ => {
+                    break;
+                }
+            }
+        }
+        value
     }
 }
 
