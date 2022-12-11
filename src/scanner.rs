@@ -85,6 +85,15 @@ impl Scanner<'_> {
                     }));
                 }
             },
+            '0'..='9' => match self.scan_number(character) {
+                Ok((value, length)) => TokenType::Number { value, length },
+                Err(string) => {
+                    return Some(Err(Error::UnterminatedNumber {
+                        string,
+                        position: start,
+                    }));
+                }
+            },
             _ => {
                 return Some(Err(Error::UnexpectedCharacter {
                     character,
@@ -113,6 +122,44 @@ impl Scanner<'_> {
             value.push(character);
         }
         Err(value)
+    }
+    fn scan_number(&mut self, first_digit: char) -> std::result::Result<(f64, usize), String> {
+        let mut value = String::from(first_digit);
+
+        let integer_part = self.scan_integer()?;
+        value += &integer_part;
+
+        if let Some((_, character)) = self.chars.peek() {
+            if *character == '.' {
+                value.push(*character);
+                self.chars.next();
+                let fractional_part = self.scan_integer()?;
+                if fractional_part.is_empty() {
+                    return Err(value);
+                }
+                value += &fractional_part;
+            }
+        }
+        println!("scan number error {}", value);
+        Ok((value.parse().unwrap(), value.len()))
+    }
+    fn scan_integer(&mut self) -> std::result::Result<String, String> {
+        let mut value = String::new();
+        while let Some((_, character)) = self.chars.peek() {
+            match character {
+                '0'..='9' => {
+                    value.push(*character);
+                    self.chars.next();
+                }
+                '.' | ' ' | '\r' | '\t' | '\n' => {
+                    break;
+                }
+                _ => {
+                    return Err(value);
+                }
+            }
+        }
+        Ok(value)
     }
 }
 
@@ -312,5 +359,15 @@ mod tests {
                 }
             ]
         );
+    }
+
+    #[test]
+    fn scan_unterminated_number() {
+        let tokens = Scanner::new("123.", 0).scan_tokens();
+        assert!(tokens.is_err());
+        assert!(matches!(
+            tokens.unwrap_err(),
+            Error::UnterminatedNumber { .. }
+        ));
     }
 }

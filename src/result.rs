@@ -9,6 +9,7 @@ pub enum Error {
     OutOfLineNumbers,
     UnexpectedCharacter { character: char, position: usize },
     UnexpectedEof,
+    UnterminatedNumber { string: String, position: usize },
     UnterminatedString { string: String, position: usize },
 }
 
@@ -20,6 +21,7 @@ impl Error {
             Error::OutOfLineNumbers => exitcode::SOFTWARE,
             Error::UnexpectedCharacter { .. } => exitcode::USAGE,
             Error::UnexpectedEof => exitcode::USAGE,
+            Error::UnterminatedNumber { .. } => exitcode::USAGE,
             Error::UnterminatedString { .. } => exitcode::USAGE,
         }
     }
