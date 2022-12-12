@@ -2,7 +2,12 @@
 
 extern crate exitcode;
 
-use clap::Parser;
+use clap::Parser as ClapParser;
+
+mod expression;
+
+mod parser;
+use parser::*;
 
 mod result;
 use result::*;
@@ -13,7 +18,7 @@ use scanner::*;
 mod token;
 
 /// Lox interpreter written in Rust
-#[derive(Parser, Debug)]
+#[derive(ClapParser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Path of the file to be executed
@@ -76,6 +81,8 @@ fn eval(source: &String, line_number: usize) -> Result<String> {
     for token in tokens.iter() {
         println!("token={:?}", token);
     }
+
+    let parser = Parser::new(tokens);
 
     todo!();
 }
