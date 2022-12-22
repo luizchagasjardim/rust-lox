@@ -1,8 +1,15 @@
 enum Expression {
     Literal(Literal),
-    Unary(Box<Unary>),
-    Binary(Box<Binary>),
-    Grouping(Box<Grouping>),
+    Unary {
+        operator: UnaryOperator,
+        expression: Box<Expression>,
+    },
+    Binary {
+        left: Box<Expression>,
+        operator: BinaryOperator,
+        right: Box<Expression>,
+    },
+    Grouping(Box<Expression>),
 }
 
 enum Literal {
@@ -13,22 +20,9 @@ enum Literal {
     Nil,
 }
 
-struct Grouping(Expression);
-
 enum UnaryOperator {
     Negation,
     Minus,
-}
-
-struct Unary {
-    operator: UnaryOperator,
-    expression: Expression,
-}
-
-struct Binary {
-    left: Expression,
-    operator: BinaryOperator,
-    right: Expression,
 }
 
 enum BinaryOperator {
@@ -44,22 +38,30 @@ enum BinaryOperator {
     Division,
 }
 
-trait ExpressionTrait {
-    fn to_code(&self) -> String;
-}
-
-impl ExpressionTrait for Expression {
+impl Expression {
     fn to_code(&self) -> String {
         match self {
             Expression::Literal(literal) => literal.to_code(),
-            Expression::Unary(unary) => unary.to_code(),
-            Expression::Binary(binary) => binary.to_code(),
-            Expression::Grouping(grouping) => grouping.to_code(),
+            Expression::Unary {
+                operator,
+                expression,
+            } => format!("{}{}", operator.to_code(), expression.to_code()),
+            Expression::Binary {
+                left,
+                operator,
+                right,
+            } => format!(
+                "{} {} {}",
+                left.to_code(),
+                operator.to_code(),
+                right.to_code()
+            ),
+            Expression::Grouping(expression) => format!("({})", expression.to_code()),
         }
     }
 }
 
-impl ExpressionTrait for Literal {
+impl Literal {
     fn to_code(&self) -> String {
         match self {
             Literal::Number(number) => number.to_string(),
@@ -71,30 +73,7 @@ impl ExpressionTrait for Literal {
     }
 }
 
-impl ExpressionTrait for Unary {
-    fn to_code(&self) -> String {
-        format!("{}{}", self.operator.to_code(), self.expression.to_code())
-    }
-}
-
-impl ExpressionTrait for Binary {
-    fn to_code(&self) -> String {
-        format!(
-            "{} {} {}",
-            self.left.to_code(),
-            self.operator.to_code(),
-            self.right.to_code()
-        )
-    }
-}
-
-impl ExpressionTrait for Grouping {
-    fn to_code(&self) -> String {
-        format!("({})", self.0.to_code())
-    }
-}
-
-impl ExpressionTrait for UnaryOperator {
+impl UnaryOperator {
     fn to_code(&self) -> String {
         match self {
             UnaryOperator::Negation => "!".to_string(),
@@ -103,7 +82,7 @@ impl ExpressionTrait for UnaryOperator {
     }
 }
 
-impl ExpressionTrait for BinaryOperator {
+impl BinaryOperator {
     fn to_code(&self) -> String {
         match self {
             BinaryOperator::Equality => "==".to_string(),
@@ -157,23 +136,149 @@ mod tests {
     #[test]
     fn negation_expression_to_code() {
         let literal = Expression::Literal(Literal::False);
-        let unary = Unary {
+        let expression = Expression::Unary {
             operator: UnaryOperator::Negation,
-            expression: literal,
+            expression: Box::new(literal),
         };
-        let expression = Expression::Unary(Box::<Unary>::new(unary));
         assert_eq!(expression.to_code(), "!False".to_string());
     }
 
     #[test]
     fn minus_expression_to_code() {
         let literal = Expression::Literal(Literal::Number(4.2));
-        let unary = Unary {
+        let expression = Expression::Unary {
             operator: UnaryOperator::Minus,
-            expression: literal,
+            expression: Box::new(literal),
         };
-        let expression = Expression::Unary(Box::<Unary>::new(unary));
         assert_eq!(expression.to_code(), "-4.2".to_string());
+    }
+
+    #[test]
+    fn equality_expression_to_code() {
+        let left = Expression::Literal(Literal::Number(6.66));
+        let right = Expression::Literal(Literal::False);
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::Equality,
+            right: Box::new(right),
+        };
+        assert_eq!(expression.to_code(), "6.66 == False".to_string());
+    }
+
+    #[test]
+    fn different_expression_to_code() {
+        let left = Expression::Literal(Literal::Nil);
+        let right = Expression::Literal(Literal::Nil);
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::Different,
+            right: Box::new(right),
+        };
+        assert_eq!(expression.to_code(), "Nil != Nil".to_string());
+    }
+
+    #[test]
+    fn less_expression_to_code() {
+        let left = Expression::Literal(Literal::Number(3.14));
+        let right = Expression::Literal(Literal::Number(3.16));
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::Less,
+            right: Box::new(right),
+        };
+        assert_eq!(expression.to_code(), "3.14 < 3.16".to_string());
+    }
+
+    #[test]
+    fn equal_or_less_expression_to_code() {
+        let left = Expression::Literal(Literal::Number(-3.16));
+        let right = Expression::Literal(Literal::Number(-3.14));
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::EqualOrLess,
+            right: Box::new(right),
+        };
+        assert_eq!(expression.to_code(), "-3.16 <= -3.14".to_string());
+    }
+
+    #[test]
+    fn greater_expression_to_code() {
+        let left = Expression::Literal(Literal::String("Hello".to_string()));
+        let right = Expression::Literal(Literal::String("World".to_string()));
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::Greater,
+            right: Box::new(right),
+        };
+        assert_eq!(expression.to_code(), "\"Hello\" > \"World\"".to_string());
+    }
+
+    #[test]
+    fn equal_or_greater_expression_to_code() {
+        let left = Expression::Literal(Literal::String("Hello, world!".to_string()));
+        let right = Expression::Literal(Literal::True);
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::EqualOrGreater,
+            right: Box::new(right),
+        };
+        assert_eq!(
+            expression.to_code(),
+            "\"Hello, world!\" >= True".to_string()
+        );
+    }
+
+    #[test]
+    fn addition_expression_to_code() {
+        let left = Expression::Literal(Literal::Number(1.2));
+        let right = Expression::Literal(Literal::Number(3.4));
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::Addition,
+            right: Box::new(right),
+        };
+        assert_eq!(expression.to_code(), "1.2 + 3.4".to_string());
+    }
+
+    #[test]
+    fn subtraction_expression_to_code() {
+        let left = Expression::Literal(Literal::Number(0.1));
+        let right = Expression::Literal(Literal::Number(-0.1));
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::Subtraction,
+            right: Box::new(right),
+        };
+        assert_eq!(expression.to_code(), "0.1 - -0.1".to_string()); //TODO: Do we really want this behaviour? No
+    }
+
+    #[test]
+    fn multiplication_expression_to_code() {
+        let left = Expression::Literal(Literal::False);
+        let right = Expression::Literal(Literal::True);
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::Multiplication,
+            right: Box::new(right),
+        };
+        assert_eq!(expression.to_code(), "False * True".to_string());
+    }
+
+    #[test]
+    fn division_expression_to_code() {
+        let left = Expression::Literal(Literal::String(
+            "No division by zero allowed!!!".to_string(),
+        ));
+        let right = Expression::Literal(Literal::Number(0.0));
+        let expression = Expression::Binary {
+            left: Box::new(left),
+            operator: BinaryOperator::Division,
+            right: Box::new(right),
+        };
+        assert_eq!(
+            expression.to_code(),
+            "\"No division by zero allowed!!!\" / 0".to_string()
+        );
     }
 
     #[test]
@@ -181,8 +286,7 @@ mod tests {
         let literal = Expression::Literal(Literal::String(
             "The quick brown fox did WHAT!?".to_string(),
         ));
-        let grouping = Grouping(literal);
-        let expression = Expression::Grouping(Box::<Grouping>::new(grouping));
+        let expression = Expression::Grouping(Box::new(literal));
         assert_eq!(
             expression.to_code(),
             "(\"The quick brown fox did WHAT!?\")".to_string()
