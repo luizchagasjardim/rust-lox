@@ -1,4 +1,4 @@
-enum Expression {
+pub enum Expression {
     Literal(Literal),
     Unary {
         operator: UnaryOperator,
@@ -25,7 +25,7 @@ enum UnaryOperator {
     Minus,
 }
 
-enum BinaryOperator {
+pub enum BinaryOperator {
     Equality,
     Different,
     Less,
@@ -39,6 +39,11 @@ enum BinaryOperator {
 }
 
 impl Expression {
+    pub fn new() -> Self {
+        // HACK: Fixmme
+        Self::Literal(Literal::True)
+    }
+
     fn to_code(&self) -> String {
         match self {
             Expression::Literal(literal) => literal.to_code(),
