@@ -12,7 +12,7 @@ pub enum Expression {
     Grouping(Box<Expression>),
 }
 
-enum Literal {
+pub enum Literal {
     Number(f64),
     String(String),
     True,

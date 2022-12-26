@@ -11,6 +11,7 @@ pub enum Error {
     UnexpectedEof,
     UnterminatedNumber { string: String, position: usize },
     UnterminatedString { string: String, position: usize },
+    UnmatchedParenthesis,
 }
 
 impl Error {
@@ -23,6 +24,7 @@ impl Error {
             Error::UnexpectedEof => exitcode::USAGE,
             Error::UnterminatedNumber { .. } => exitcode::USAGE,
             Error::UnterminatedString { .. } => exitcode::USAGE,
+            Error::UnmatchedParenthesis => exitcode::USAGE,
         }
     }
 }

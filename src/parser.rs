@@ -115,7 +115,28 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Expression {
-        todo!()
+        if self.match_token(TokenType::False) {
+            Expression::Literal(Literal::False)
+        } else if self.match_token(TokenType::True) {
+            Expression::Literal(Literal::True)
+        } else if self.match_token(TokenType::Nil) {
+            Expression::Literal(Literal::Nil)
+        } else if self.match_number() {
+            let TokenType::Number { value, .. } = self.previous() else { unreachable!() };
+            Expression::Literal(Literal::Number(value))
+        } else if self.match_string() {
+            let TokenType::String(string) = self.previous() else { unreachable!() };
+            Expression::Literal(Literal::String(string))
+        } else if self.match_token(TokenType::LeftParen) {
+            let expression = self.expression();
+            if !self.match_token(TokenType::RightParen) {
+                todo!();
+                //return Err(Error::UnmatchedParenthesis); //TODO: include error location
+            }
+            expression
+        } else {
+            todo!();
+        }
     }
 
     fn match_token(&mut self, token: TokenType) -> bool {
@@ -124,6 +145,26 @@ impl Parser {
             return true;
         }
         return false;
+    }
+
+    fn match_number(&mut self) -> bool {
+        if self.is_at_end() {
+            return false;
+        }
+        let TokenType::Number{..} = self.peek() else {
+            return false;
+        };
+        true
+    }
+
+    fn match_string(&mut self) -> bool {
+        if self.is_at_end() {
+            return false;
+        }
+        let TokenType::String(_) = self.peek() else {
+            return false;
+        };
+        true
     }
 
     fn check(&self, token: TokenType) -> bool {
