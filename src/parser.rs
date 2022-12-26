@@ -98,6 +98,23 @@ impl Parser {
     }
 
     fn unary(&mut self) -> Expression {
+        if self.match_token(TokenType::Bang) || self.match_token(TokenType::Minus) {
+            let operator = match self.previous() {
+                TokenType::Bang => UnaryOperator::Negation,
+                TokenType::Minus => UnaryOperator::Minus,
+                _ => unreachable!(),
+            };
+            let expression = self.unary();
+            Expression::Unary {
+                operator,
+                expression: Box::new(expression),
+            }
+        } else {
+            self.primary()
+        }
+    }
+
+    fn primary(&mut self) -> Expression {
         todo!()
     }
 

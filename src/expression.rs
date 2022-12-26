@@ -20,7 +20,7 @@ enum Literal {
     Nil,
 }
 
-enum UnaryOperator {
+pub enum UnaryOperator {
     Negation,
     Minus,
 }
