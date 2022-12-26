@@ -4,6 +4,7 @@ use exitcode;
 
 #[derive(Debug)]
 pub enum Error {
+    ExpectedExpression { position: usize },
     IoError(IoError),
     KeyboardInterrupt,
     OutOfLineNumbers,
@@ -17,6 +18,7 @@ pub enum Error {
 impl Error {
     pub fn exit_code(&self) -> i32 {
         match &self {
+            Error::ExpectedExpression { .. } => exitcode::USAGE,
             Error::IoError(_) => exitcode::IOERR,
             Error::KeyboardInterrupt => exitcode::OK,
             Error::OutOfLineNumbers => exitcode::SOFTWARE,

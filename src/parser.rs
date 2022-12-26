@@ -138,7 +138,9 @@ impl Parser {
                 })
             }
         } else {
-            todo!();
+            Err(Error::ExpectedExpression {
+                position: self.peek().start,
+            })
         }
     }
 
@@ -199,7 +201,7 @@ impl Parser {
     fn synchronize(&mut self) {
         self.advance();
         while !self.is_at_end() {
-            if self.previous().token_type == TokenType::Semicolon {
+            if self.previous() == &TokenType::Semicolon {
                 return;
             }
             if matches!(
