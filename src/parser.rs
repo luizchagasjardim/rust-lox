@@ -62,6 +62,24 @@ impl Parser {
     }
 
     fn term(&mut self) -> Expression {
+        let mut expr = self.factor();
+        while self.match_token(TokenType::Minus) || self.match_token(TokenType::Plus) {
+            let operator = match self.previous() {
+                TokenType::Minus => BinaryOperator::Subtraction,
+                TokenType::Plus => BinaryOperator::Addition,
+                _ => unimplemented!(),
+            };
+            let right = self.factor();
+            expr = Expression::Binary {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            };
+        }
+        expr
+    }
+
+    fn factor(&mut self) -> Expression {
         todo!()
     }
 
