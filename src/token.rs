@@ -1,3 +1,5 @@
+use crate::token::TokenType::While;
+
 #[derive(Debug, PartialEq)]
 pub enum TokenType {
     LeftParen,
@@ -41,6 +43,23 @@ pub enum TokenType {
     EOF,
 }
 
+pub const AND_KEYWORD: &'static str = "and";
+pub const CLASS_KEYWORD: &'static str = "class";
+pub const ELSE_KEYWORD: &'static str = "else";
+pub const FALSE_KEYWORD: &'static str = "false";
+pub const FUN_KEYWORD: &'static str = "fun";
+pub const FOR_KEYWORD: &'static str = "for";
+pub const IF_KEYWORD: &'static str = "if";
+pub const NIL_KEYWORD: &'static str = "nil";
+pub const OR_KEYWORD: &'static str = "or";
+pub const PRINT_KEYWORD: &'static str = "print";
+pub const RETURN_KEYWORD: &'static str = "return";
+pub const SUPER_KEYWORD: &'static str = "super";
+pub const THIS_KEYWORD: &'static str = "this";
+pub const TRUE_KEYWORD: &'static str = "true";
+pub const VAR_KEYWORD: &'static str = "var";
+pub const WHILE_KEYWORD: &'static str = "while";
+
 impl TokenType {
     pub fn length(&self) -> usize {
         match self {
@@ -66,22 +85,22 @@ impl TokenType {
             TokenType::Identifier(string) => string.len(),
             TokenType::String(string) => string.len(),
             TokenType::Number { value: _, length } => *length,
-            TokenType::And => todo!(),
-            TokenType::Class => todo!(),
-            TokenType::Else => todo!(),
-            TokenType::False => todo!(),
-            TokenType::Fun => todo!(),
-            TokenType::For => todo!(),
-            TokenType::If => todo!(),
-            TokenType::Nil => todo!(),
-            TokenType::Or => todo!(),
-            TokenType::Print => todo!(),
-            TokenType::Return => todo!(),
-            TokenType::Super => todo!(),
-            TokenType::This => todo!(),
-            TokenType::True => todo!(),
-            TokenType::Var => todo!(),
-            TokenType::While => todo!(),
+            TokenType::And => AND_KEYWORD.len(),
+            TokenType::Class => CLASS_KEYWORD.len(),
+            TokenType::Else => ELSE_KEYWORD.len(),
+            TokenType::False => FALSE_KEYWORD.len(),
+            TokenType::Fun => FUN_KEYWORD.len(),
+            TokenType::For => FOR_KEYWORD.len(),
+            TokenType::If => IF_KEYWORD.len(),
+            TokenType::Nil => NIL_KEYWORD.len(),
+            TokenType::Or => OR_KEYWORD.len(),
+            TokenType::Print => PRINT_KEYWORD.len(),
+            TokenType::Return => RETURN_KEYWORD.len(),
+            TokenType::Super => SUPER_KEYWORD.len(),
+            TokenType::This => THIS_KEYWORD.len(),
+            TokenType::True => TRUE_KEYWORD.len(),
+            TokenType::Var => VAR_KEYWORD.len(),
+            TokenType::While => WHILE_KEYWORD.len(),
             TokenType::EOF => 0,
         }
     }
@@ -91,6 +110,12 @@ impl TokenType {
 pub struct Token {
     pub token_type: TokenType,
     pub start: usize,
+}
+
+impl Token {
+    pub fn new(token_type: TokenType, start: usize) -> Token {
+        Token { token_type, start }
+    }
 }
 
 #[cfg(test)]
@@ -190,5 +215,100 @@ mod tests {
     #[test]
     fn eof_length() {
         assert_eq!(TokenType::EOF.length(), 0,);
+    }
+
+    #[test]
+    fn and_length() {
+        assert_eq!(TokenType::And.length(), 3);
+    }
+
+    #[test]
+    fn class_length() {
+        assert_eq!(TokenType::Class.length(), 5);
+    }
+
+    #[test]
+    fn else_length() {
+        assert_eq!(TokenType::Else.length(), 4);
+    }
+
+    #[test]
+    fn false_length() {
+        assert_eq!(TokenType::False.length(), 5);
+    }
+
+    #[test]
+    fn fun_length() {
+        assert_eq!(TokenType::Fun.length(), 3);
+    }
+
+    #[test]
+    fn for_length() {
+        assert_eq!(TokenType::For.length(), 3);
+    }
+
+    #[test]
+    fn if_length() {
+        assert_eq!(TokenType::If.length(), 2);
+    }
+
+    #[test]
+    fn nil_length() {
+        assert_eq!(TokenType::Nil.length(), 3);
+    }
+
+    #[test]
+    fn or_length() {
+        assert_eq!(TokenType::Or.length(), 2);
+    }
+
+    #[test]
+    fn print_length() {
+        assert_eq!(TokenType::Print.length(), 5);
+    }
+
+    #[test]
+    fn return_length() {
+        assert_eq!(TokenType::Return.length(), 6);
+    }
+
+    #[test]
+    fn super_length() {
+        assert_eq!(TokenType::Super.length(), 5);
+    }
+
+    #[test]
+    fn this_length() {
+        assert_eq!(TokenType::This.length(), 4);
+    }
+
+    #[test]
+    fn true_length() {
+        assert_eq!(TokenType::True.length(), 4);
+    }
+
+    #[test]
+    fn var_length() {
+        assert_eq!(TokenType::Var.length(), 3);
+    }
+
+    #[test]
+    fn while_length() {
+        assert_eq!(TokenType::While.length(), 5);
+    }
+    #[test]
+    fn string_length() {
+        assert_eq!(TokenType::String("ola".to_string()).length(), 3);
+    }
+    #[test]
+    fn number_length() {
+        assert_eq!(
+            TokenType::Number {
+                value: 2.0,
+                length: 1
+            }
+            .length(),
+            1
+        );
     }
 }

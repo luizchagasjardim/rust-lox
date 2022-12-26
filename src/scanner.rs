@@ -96,37 +96,37 @@ impl Scanner<'_> {
             },
             'a'..='z' | 'A'..='Z' | '_' => {
                 let identifier_or_keyword = self.scan_identifier_or_keyword(character);
-                if identifier_or_keyword == "and" {
+                if identifier_or_keyword == AND_KEYWORD {
                     TokenType::And
-                } else if identifier_or_keyword == "class" {
+                } else if identifier_or_keyword == CLASS_KEYWORD {
                     TokenType::Class
-                } else if identifier_or_keyword == "else" {
+                } else if identifier_or_keyword == ELSE_KEYWORD {
                     TokenType::Else
-                } else if identifier_or_keyword == "false" {
+                } else if identifier_or_keyword == FALSE_KEYWORD {
                     TokenType::False
-                } else if identifier_or_keyword == "fun" {
+                } else if identifier_or_keyword == FUN_KEYWORD {
                     TokenType::Fun
-                } else if identifier_or_keyword == "for" {
+                } else if identifier_or_keyword == FOR_KEYWORD {
                     TokenType::For
-                } else if identifier_or_keyword == "if" {
+                } else if identifier_or_keyword == IF_KEYWORD {
                     TokenType::If
-                } else if identifier_or_keyword == "nil" {
+                } else if identifier_or_keyword == NIL_KEYWORD {
                     TokenType::Nil
-                } else if identifier_or_keyword == "or" {
+                } else if identifier_or_keyword == OR_KEYWORD {
                     TokenType::Or
-                } else if identifier_or_keyword == "print" {
+                } else if identifier_or_keyword == PRINT_KEYWORD {
                     TokenType::Print
-                } else if identifier_or_keyword == "return" {
+                } else if identifier_or_keyword == RETURN_KEYWORD {
                     TokenType::Return
-                } else if identifier_or_keyword == "super" {
+                } else if identifier_or_keyword == SUPER_KEYWORD {
                     TokenType::Super
-                } else if identifier_or_keyword == "this" {
+                } else if identifier_or_keyword == THIS_KEYWORD {
                     TokenType::This
-                } else if identifier_or_keyword == "true" {
+                } else if identifier_or_keyword == TRUE_KEYWORD {
                     TokenType::True
-                } else if identifier_or_keyword == "var" {
+                } else if identifier_or_keyword == VAR_KEYWORD {
                     TokenType::Var
-                } else if identifier_or_keyword == "while" {
+                } else if identifier_or_keyword == WHILE_KEYWORD {
                     TokenType::While
                 } else {
                     TokenType::Identifier(identifier_or_keyword)
