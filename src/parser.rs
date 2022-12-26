@@ -12,6 +12,10 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
+    pub fn parse(mut self) -> Result<Expression, Error> {
+        self.expression()
+    }
+
     fn expression(&mut self) -> Result<Expression, Error> {
         self.equality()
     }
@@ -159,6 +163,7 @@ impl Parser {
         let TokenType::Number{..} = self.peek().token_type else {
             return false;
         };
+        self.advance();
         true
     }
 
@@ -169,6 +174,7 @@ impl Parser {
         let TokenType::String(_) = self.peek().token_type else {
             return false;
         };
+        self.advance();
         true
     }
 

@@ -39,7 +39,7 @@ pub enum BinaryOperator {
 }
 
 impl Expression {
-    fn to_code(&self) -> String {
+    pub fn to_code(&self) -> String {
         match self {
             Expression::Literal(literal) => literal.to_code(),
             Expression::Unary {

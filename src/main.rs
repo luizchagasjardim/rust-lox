@@ -75,14 +75,7 @@ fn read() -> Result<String> {
 }
 
 fn eval(source: &String, line_number: usize) -> Result<String> {
-    let scanner = Scanner::new(&source, line_number);
-    let tokens = scanner.scan_tokens()?;
-
-    for token in tokens.iter() {
-        println!("token={:?}", token);
-    }
-
-    let parser = Parser::new(tokens);
-
-    todo!();
+    let tokens = Scanner::new(&source, line_number).scan_tokens()?;
+    let expression = Parser::new(tokens).parse()?;
+    Ok(expression.to_code()) //TODO: return expression result instead of code
 }
