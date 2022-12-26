@@ -164,14 +164,18 @@ impl Scanner<'_> {
     fn scan_number(&mut self, first_digit: char) -> std::result::Result<(f64, usize), String> {
         let mut value = String::from(first_digit);
 
-        let integer_part = self.scan_integer()?;
+        let integer_part = self
+            .scan_integer()
+            .map_err(|err| format!("{}{}", value, err))?;
         value += &integer_part;
 
         if let Some((_, character)) = self.chars.peek() {
             if *character == '.' {
                 value.push(*character);
                 self.chars.next();
-                let fractional_part = self.scan_integer()?;
+                let fractional_part = self
+                    .scan_integer()
+                    .map_err(|err| format!("{}{}", value, err))?;
                 if fractional_part.is_empty() {
                     return Err(value);
                 }
@@ -260,7 +264,7 @@ mod tests {
 
     #[test]
     fn scan_single_character_tokens() {
-        let tokens = Scanner::new("(}{,+)", 0).scan_tokens();
+        let tokens = Scanner::new("(}{,+).-;*", 0).scan_tokens();
         assert!(tokens.is_ok());
         assert_eq!(
             tokens.unwrap(),
@@ -290,6 +294,22 @@ mod tests {
                     start: 5
                 },
                 Token {
+                    token_type: TokenType::Dot,
+                    start: 6
+                },
+                Token {
+                    token_type: TokenType::Minus,
+                    start: 7
+                },
+                Token {
+                    token_type: TokenType::Semicolon,
+                    start: 8
+                },
+                Token {
+                    token_type: TokenType::Star,
+                    start: 9
+                },
+                Token {
                     token_type: TokenType::EOF,
                     start: 0
                 }
@@ -299,7 +319,7 @@ mod tests {
 
     #[test]
     fn scan_single_or_double_character_tokens() {
-        let tokens = Scanner::new("!(!= = >=< =", 0).scan_tokens();
+        let tokens = Scanner::new("!(!= = >=< = <=> == /", 0).scan_tokens();
         assert!(tokens.is_ok());
         assert_eq!(
             tokens.unwrap(),
@@ -331,6 +351,22 @@ mod tests {
                 Token {
                     token_type: TokenType::Equal,
                     start: 11
+                },
+                Token {
+                    token_type: TokenType::LessEqual,
+                    start: 13
+                },
+                Token {
+                    token_type: TokenType::Greater,
+                    start: 15
+                },
+                Token {
+                    token_type: TokenType::EqualEqual,
+                    start: 17
+                },
+                Token {
+                    token_type: TokenType::Slash,
+                    start: 20
                 },
                 Token {
                     token_type: TokenType::EOF,
@@ -392,6 +428,17 @@ mod tests {
     }
 
     #[test]
+    fn scan_integer_with_error() {
+        let tokens = Scanner::new("123banana", 0).scan_tokens();
+        assert!(tokens.is_err());
+        let Error::UnterminatedNumber { string, position } = tokens.unwrap_err() else {
+            panic!();
+        };
+        assert_eq!(string, "123".to_string());
+        assert_eq!(position, 0);
+    }
+
+    #[test]
     fn scan_decimal() {
         let tokens = Scanner::new("123.0", 0).scan_tokens();
         assert!(tokens.is_ok());
@@ -421,6 +468,17 @@ mod tests {
             tokens.unwrap_err(),
             Error::UnterminatedNumber { .. }
         ));
+    }
+
+    #[test]
+    fn scan_decimal_with_error() {
+        let tokens = Scanner::new("42.O", 0).scan_tokens();
+        assert!(tokens.is_err());
+        let Error::UnterminatedNumber { string, position } = tokens.unwrap_err() else {
+            panic!();
+        };
+        assert_eq!(string, "42.".to_string());
+        assert_eq!(position, 0);
     }
 
     #[test]
@@ -820,5 +878,16 @@ mod tests {
                 }
             ]
         );
+    }
+
+    #[test]
+    fn scan_disallowed_character() {
+        let tokens = Scanner::new("[", 0).scan_tokens();
+        assert!(tokens.is_err());
+        let Error::UnexpectedCharacter { character, position } = tokens.unwrap_err() else {
+            panic!();
+        };
+        assert_eq!(character, '[');
+        assert_eq!(position, 0);
     }
 }
