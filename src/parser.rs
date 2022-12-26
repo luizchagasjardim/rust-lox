@@ -1,4 +1,5 @@
 use crate::expression::*;
+use crate::result::Error;
 use crate::token::*;
 
 pub struct Parser {
@@ -11,20 +12,20 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
-    fn expression(&mut self) -> Expression {
+    fn expression(&mut self) -> Result<Expression, Error> {
         self.equality()
     }
 
-    fn equality(&mut self) -> Expression {
-        let mut expr = self.comparison();
+    fn equality(&mut self) -> Result<Expression, Error> {
+        let mut expr = self.comparison()?;
         while self.match_token(TokenType::BangEqual) || self.match_token(TokenType::EqualEqual) {
             let operator_token_type = self.previous();
             let operator = match operator_token_type {
                 TokenType::BangEqual => BinaryOperator::Different,
                 TokenType::EqualEqual => BinaryOperator::Equality,
-                _ => unimplemented!(),
+                _ => unreachable!(),
             };
-            let right = self.comparison();
+            let right = self.comparison()?;
 
             expr = Expression::Binary {
                 left: Box::new(expr),
@@ -32,11 +33,11 @@ impl Parser {
                 right: Box::new(right),
             };
         }
-        expr
+        Ok(expr)
     }
 
-    fn comparison(&mut self) -> Expression {
-        let mut expr = self.term();
+    fn comparison(&mut self) -> Result<Expression, Error> {
+        let mut expr = self.term()?;
         while self.match_token(TokenType::Greater)
             || self.match_token(TokenType::GreaterEqual)
             || self.match_token(TokenType::Less)
@@ -48,9 +49,9 @@ impl Parser {
                 TokenType::GreaterEqual => BinaryOperator::Equality,
                 TokenType::Less => BinaryOperator::Equality,
                 TokenType::LessEqual => BinaryOperator::EqualOrLess,
-                _ => unimplemented!(),
+                _ => unreachable!(),
             };
-            let right = self.comparison();
+            let right = self.comparison()?;
 
             expr = Expression::Binary {
                 left: Box::new(expr),
@@ -58,82 +59,82 @@ impl Parser {
                 right: Box::new(right),
             };
         }
-        expr
+        Ok(expr)
     }
 
-    fn term(&mut self) -> Expression {
-        let mut expr = self.factor();
+    fn term(&mut self) -> Result<Expression, Error> {
+        let mut expr = self.factor()?;
         while self.match_token(TokenType::Minus) || self.match_token(TokenType::Plus) {
             let operator = match self.previous() {
                 TokenType::Minus => BinaryOperator::Subtraction,
                 TokenType::Plus => BinaryOperator::Addition,
-                _ => unimplemented!(),
+                _ => unreachable!(),
             };
-            let right = self.factor();
+            let right = self.factor()?;
             expr = Expression::Binary {
                 left: Box::new(expr),
                 operator,
                 right: Box::new(right),
             };
         }
-        expr
+        Ok(expr)
     }
 
-    fn factor(&mut self) -> Expression {
-        let mut expr = self.unary();
+    fn factor(&mut self) -> Result<Expression, Error> {
+        let mut expr = self.unary()?;
         while self.match_token(TokenType::Slash) || self.match_token(TokenType::Star) {
             let operator = match self.previous() {
                 TokenType::Slash => BinaryOperator::Division,
                 TokenType::Star => BinaryOperator::Multiplication,
                 _ => unreachable!(),
             };
-            let right = self.unary();
+            let right = self.unary()?;
             expr = Expression::Binary {
                 left: Box::new(expr),
                 operator,
                 right: Box::new(right),
             };
         }
-        expr
+        Ok(expr)
     }
 
-    fn unary(&mut self) -> Expression {
+    fn unary(&mut self) -> Result<Expression, Error> {
         if self.match_token(TokenType::Bang) || self.match_token(TokenType::Minus) {
             let operator = match self.previous() {
                 TokenType::Bang => UnaryOperator::Negation,
                 TokenType::Minus => UnaryOperator::Minus,
                 _ => unreachable!(),
             };
-            let expression = self.unary();
-            Expression::Unary {
+            let expression = self.unary()?;
+            Ok(Expression::Unary {
                 operator,
                 expression: Box::new(expression),
-            }
+            })
         } else {
             self.primary()
         }
     }
 
-    fn primary(&mut self) -> Expression {
+    fn primary(&mut self) -> Result<Expression, Error> {
         if self.match_token(TokenType::False) {
-            Expression::Literal(Literal::False)
+            Ok(Expression::Literal(Literal::False))
         } else if self.match_token(TokenType::True) {
-            Expression::Literal(Literal::True)
+            Ok(Expression::Literal(Literal::True))
         } else if self.match_token(TokenType::Nil) {
-            Expression::Literal(Literal::Nil)
+            Ok(Expression::Literal(Literal::Nil))
         } else if self.match_number() {
             let TokenType::Number { value, .. } = self.previous() else { unreachable!() };
-            Expression::Literal(Literal::Number(value))
+            Ok(Expression::Literal(Literal::Number(value)))
         } else if self.match_string() {
             let TokenType::String(string) = self.previous() else { unreachable!() };
-            Expression::Literal(Literal::String(string))
+            Ok(Expression::Literal(Literal::String(string)))
         } else if self.match_token(TokenType::LeftParen) {
             let expression = self.expression();
-            if !self.match_token(TokenType::RightParen) {
-                todo!();
-                //return Err(Error::UnmatchedParenthesis); //TODO: include error location
+            if self.match_token(TokenType::RightParen) {
+                expression
+            } else {
+                Err(Error::UnmatchedParenthesis) //TODO: include error location
             }
-            expression
         } else {
             todo!();
         }
@@ -144,7 +145,7 @@ impl Parser {
             self.advance();
             return true;
         }
-        return false;
+        false
     }
 
     fn match_number(&mut self) -> bool {
