@@ -80,6 +80,24 @@ impl Parser {
     }
 
     fn factor(&mut self) -> Expression {
+        let mut expr = self.unary();
+        while self.match_token(TokenType::Slash) || self.match_token(TokenType::Star) {
+            let operator = match self.previous() {
+                TokenType::Slash => BinaryOperator::Division,
+                TokenType::Star => BinaryOperator::Multiplication,
+                _ => unreachable!(),
+            };
+            let right = self.unary();
+            expr = Expression::Binary {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            };
+        }
+        expr
+    }
+
+    fn unary(&mut self) -> Expression {
         todo!()
     }
 
