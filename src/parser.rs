@@ -124,16 +124,18 @@ impl Parser {
             Ok(Expression::Literal(Literal::Nil))
         } else if self.match_number() {
             let TokenType::Number { value, .. } = self.previous() else { unreachable!() };
-            Ok(Expression::Literal(Literal::Number(value)))
+            Ok(Expression::Literal(Literal::Number(*value)))
         } else if self.match_string() {
             let TokenType::String(string) = self.previous() else { unreachable!() };
-            Ok(Expression::Literal(Literal::String(string)))
+            Ok(Expression::Literal(Literal::String(string.clone())))
         } else if self.match_token(TokenType::LeftParen) {
             let expression = self.expression();
             if self.match_token(TokenType::RightParen) {
                 expression
             } else {
-                Err(Error::UnmatchedParenthesis) //TODO: include error location
+                Err(Error::UnmatchedParenthesis {
+                    position: self.peek().start,
+                })
             }
         } else {
             todo!();
@@ -152,7 +154,7 @@ impl Parser {
         if self.is_at_end() {
             return false;
         }
-        let TokenType::Number{..} = self.peek() else {
+        let TokenType::Number{..} = self.peek().token_type else {
             return false;
         };
         true
@@ -162,7 +164,7 @@ impl Parser {
         if self.is_at_end() {
             return false;
         }
-        let TokenType::String(_) = self.peek() else {
+        let TokenType::String(_) = self.peek().token_type else {
             return false;
         };
         true
@@ -172,24 +174,24 @@ impl Parser {
         if self.is_at_end() {
             return false;
         }
-        self.peek() == token
+        self.peek().token_type == token
     }
 
-    fn advance(&mut self) -> TokenType {
+    fn advance(&mut self) -> &TokenType {
         if !self.is_at_end() {
             self.current += 1;
         }
-        self.previous()
+        &self.previous()
     }
 
     fn is_at_end(&self) -> bool {
-        self.peek() == TokenType::EOF
+        self.peek().token_type == TokenType::EOF
     }
 
-    fn peek(&self) -> TokenType {
-        self.tokens[self.current].token_type.clone()
+    fn peek(&self) -> &Token {
+        &self.tokens[self.current]
     }
-    fn previous(&self) -> TokenType {
-        self.tokens[self.current - 1].token_type.clone()
+    fn previous(&self) -> &TokenType {
+        &self.tokens[self.current - 1].token_type
     }
 }
