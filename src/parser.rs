@@ -62,7 +62,7 @@ impl Parser {
     }
 
     fn term(&mut self) -> Expression {
-        Expression::new()
+        todo!()
     }
 
     fn match_token(&mut self, token: TokenType) -> bool {

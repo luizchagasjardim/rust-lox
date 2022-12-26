@@ -39,11 +39,6 @@ pub enum BinaryOperator {
 }
 
 impl Expression {
-    pub fn new() -> Self {
-        // HACK: Fixmme
-        Self::Literal(Literal::True)
-    }
-
     fn to_code(&self) -> String {
         match self {
             Expression::Literal(literal) => literal.to_code(),
