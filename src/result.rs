@@ -4,6 +4,7 @@ use exitcode;
 
 #[derive(Debug)]
 pub enum Error {
+    EvaluationError(String),
     ExpectedExpression { position: usize },
     IoError(IoError),
     KeyboardInterrupt,
@@ -18,6 +19,7 @@ pub enum Error {
 impl Error {
     pub fn exit_code(&self) -> i32 {
         match &self {
+            Error::EvaluationError(_) => exitcode::USAGE,
             Error::ExpectedExpression { .. } => exitcode::USAGE,
             Error::IoError(_) => exitcode::IOERR,
             Error::KeyboardInterrupt => exitcode::OK,

@@ -4,7 +4,12 @@ extern crate exitcode;
 
 use clap::Parser as ClapParser;
 
+mod evaluate;
+use evaluate::Evaluate;
+
 mod expression;
+
+mod object;
 
 mod parser;
 use parser::*;
@@ -77,5 +82,8 @@ fn read() -> Result<String> {
 fn eval(source: &String, line_number: usize) -> Result<String> {
     let tokens = Scanner::new(&source, line_number).scan_tokens()?;
     let expression = Parser::new(tokens).parse()?;
-    Ok(expression.to_code()) //TODO: return expression result instead of code
+    match expression.evaluate() {
+        Ok(object) => Ok(object.to_string()),
+        Err(message) => Err(Error::EvaluationError(message)),
+    }
 }
