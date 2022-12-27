@@ -46,8 +46,11 @@ fn main() {
 fn repl() -> Result<()> {
     for line_number in 0..usize::MAX {
         let input = read()?;
-        let result = eval(&input, line_number)?;
-        println!("{}", result);
+        let result = eval(&input, line_number);
+        match result {
+            Ok(value) => println!("{}", value),
+            Err(message) => println!("ERROR: {:?}", message),
+        }
     }
     Err(Error::OutOfLineNumbers)
 }
