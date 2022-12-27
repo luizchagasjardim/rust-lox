@@ -22,15 +22,14 @@ impl Evaluate for Expression {
                 match operator {
                     BinaryOperator::Equality => Ok(Object::Boolean(left_value == right_value)),
                     BinaryOperator::Different => Ok(Object::Boolean(left_value != right_value)),
-                    _ => todo!(),
-                    // BinaryOperator::Less => left_value
-                    // BinaryOperator::EqualOrLess => {}
-                    // BinaryOperator::Greater => {}
-                    // BinaryOperator::EqualOrGreater => {}
-                    // BinaryOperator::Addition => {}
-                    // BinaryOperator::Subtraction => {}
-                    // BinaryOperator::Multiplication => {}
-                    // BinaryOperator::Division => {}
+                    BinaryOperator::Less => Ok(Object::Boolean(left_value < right_value)),
+                    BinaryOperator::EqualOrLess => Ok(Object::Boolean(left_value <= right_value)),
+                    BinaryOperator::Greater => Ok(Object::Boolean(left_value > right_value)),
+                    BinaryOperator::EqualOrGreater => Ok(Object::Boolean(left_value >= right_value)),
+                    BinaryOperator::Addition => left_value + right_value,
+                    BinaryOperator::Subtraction => left_value - right_value,
+                    BinaryOperator::Multiplication => left_value * right_value,
+                    BinaryOperator::Division => left_value / right_value,
                 }
             }
             Expression::Grouping(expression) => expression.evaluate(),
