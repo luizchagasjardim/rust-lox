@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, PartialEq, PartialOrd)] //TODO: remove PartialOrd and implement
+#[derive(Debug, PartialEq)]
 pub enum Object {
     Number(f64),
     String(String),
@@ -29,9 +29,9 @@ impl Object {
             Object::Nil => false,
         }
     }
-    pub fn as_number(self) -> Result<f64, String> {
+    pub fn as_number(&self) -> Result<f64, String> {
         match self {
-            Object::Number(number) => Ok(number),
+            Object::Number(number) => Ok(*number),
             Object::String(_) => Err("Cannot implicitly convert string to number.".to_string()),
             Object::Boolean(_) => Err("Cannot implicitly convert boolean to number.".to_string()),
             Object::Nil => Err("Cannot implicitly convert nil to number.".to_string()),
@@ -43,6 +43,15 @@ impl Object {
             Object::String(string) => Ok(string),
             Object::Boolean(_) => Err("Cannot implicitly convert boolean to string.".to_string()),
             Object::Nil => Err("Cannot implicitly convert nil to string.".to_string()),
+        }
+    }
+}
+
+impl PartialOrd for Object {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match self {
+            Object::Number(number) => number.partial_cmp(&other.as_number().ok()?),
+            _ => None,
         }
     }
 }
