@@ -152,4 +152,153 @@ mod tests {
     fn is_truthy_nil() {
         assert_eq!(Object::Nil.is_truthy(), false);
     }
+
+    #[test]
+    fn to_number_value_number() {
+        assert!(Object::Number(1.0).to_number_value().is_ok())
+    }
+    #[test]
+    fn to_number_value_string() {
+        assert!(Object::String("a".to_string()).to_number_value().is_err())
+    }
+
+    #[test]
+    fn to_number_value_boolean() {
+        assert!(Object::Boolean(true).to_number_value().is_err())
+    }
+
+    #[test]
+    fn to_number_value_nil() {
+        assert!(Object::Nil.to_number_value().is_err())
+    }
+
+    #[test]
+    fn to_string_value_number() {
+        assert!(Object::Number(1.0).to_string_value().is_err())
+    }
+    #[test]
+    fn to_string_value_string() {
+        assert!(Object::String("a".to_string()).to_string_value().is_ok())
+    }
+
+    #[test]
+    fn to_string_value_boolean() {
+        assert!(Object::Boolean(true).to_string_value().is_err())
+    }
+
+    #[test]
+    fn to_string_value_nil() {
+        assert!(Object::Nil.to_string_value().is_err())
+    }
+
+    #[test]
+    fn greater() {
+        assert!(Object::Number(1.0) > Object::Number(0.0))
+    }
+
+    #[test]
+    fn greater_nil() {
+        assert!(!(Object::Nil > Object::Nil))
+    }
+
+    #[test]
+    fn add_numbers() {
+        assert_eq!(
+            Object::Number(1.0) + Object::Number(2.0),
+            Ok(Object::Number(3.0))
+        )
+    }
+
+    #[test]
+    fn add_strings() {
+        assert_eq!(
+            Object::String("hello".to_string()) + Object::String(" world!".to_string()),
+            Ok(Object::String("hello world!".to_string()))
+        )
+    }
+
+    #[test]
+    fn add_bool() {
+        assert!((Object::Boolean(false) + (Object::Boolean(false))).is_err())
+    }
+
+    #[test]
+    fn add_nil() {
+        assert!((Object::Nil + (Object::Nil)).is_err())
+    }
+
+    #[test]
+    fn subtract_numbers() {
+        assert_eq!(
+            Object::Number(1.0) - Object::Number(2.0),
+            Ok(Object::Number(-1.0))
+        )
+    }
+
+    #[test]
+    fn subtract_strings() {
+        assert!(
+            (Object::String("hello".to_string()) - Object::String(" world!".to_string())).is_err()
+        )
+    }
+
+    #[test]
+    fn subtract_bool() {
+        assert!((Object::Boolean(true) - Object::Boolean(true)).is_err())
+    }
+
+    #[test]
+    fn subtract_nil() {
+        assert!((Object::Nil - Object::Nil).is_err())
+    }
+
+    #[test]
+    fn multiply_number() {
+        assert_eq!(
+            Object::Number(2.0) * Object::Number(2.0),
+            Ok(Object::Number(4.0))
+        )
+    }
+    #[test]
+    fn multiply_string() {
+        assert!((Object::String("a".to_string()) * Object::String("a".to_string())).is_err())
+    }
+
+    #[test]
+    fn multiply_boolean() {
+        assert!((Object::Boolean(true) * Object::Boolean(false)).is_err())
+    }
+
+    #[test]
+    fn multiply_nil() {
+        assert!((Object::Nil * Object::Nil).is_err())
+    }
+
+    #[test]
+    fn divide_number() {
+        assert_eq!(
+            Object::Number(2.0) / Object::Number(2.0),
+            Ok(Object::Number(1.0))
+        )
+    }
+
+    #[test]
+    fn divide_number_by_0() {
+        assert!((Object::Number(2.0) / Object::Number(0.0)).is_err())
+    }
+
+    #[test]
+    fn divide_string() {
+        assert!((Object::String("a".to_string()) / Object::String("a".to_string())).is_err())
+    }
+
+    #[test]
+    fn divide_boolean() {
+        assert!((Object::Boolean(true) / Object::Boolean(false)).is_err())
+    }
+
+    #[test]
+    fn divide_nil() {
+        assert!((Object::Nil / Object::Nil).is_err())
+    }
 }
