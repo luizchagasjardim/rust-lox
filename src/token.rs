@@ -1,5 +1,3 @@
-use crate::token::TokenType::While;
-
 #[derive(Debug, PartialEq)]
 pub enum TokenType {
     LeftParen,
