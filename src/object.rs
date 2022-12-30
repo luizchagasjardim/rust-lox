@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Object {
     Number(f64),
     String(String),
@@ -15,11 +15,9 @@ impl Display for Object {
 }
 
 impl Object {
-    pub fn unary_minus(self) -> Result<Object, String> {
-        match self {
-            Object::Number(number) => Ok(Object::Number(-number)),
-            _ => Err("unary minus operation can only be called on number type".to_string()),
-        }
+    pub fn unary_minus(self) -> Result<Object, Error> {
+        let number = self.to_number_value()?;
+        Ok(Object::Number(-number))
     }
     pub fn is_truthy(&self) -> bool {
         match self {
@@ -29,20 +27,18 @@ impl Object {
             Object::Nil => false,
         }
     }
-    pub fn to_number_value(&self) -> Result<f64, String> {
+    pub fn to_number_value(&self) -> Result<f64, Error> {
         match self {
             Object::Number(number) => Ok(*number),
-            Object::String(_) => Err("Cannot implicitly convert string to number.".to_string()),
-            Object::Boolean(_) => Err("Cannot implicitly convert boolean to number.".to_string()),
-            Object::Nil => Err("Cannot implicitly convert nil to number.".to_string()),
+            _ => Err(Error::ExpectedNumber {
+                actual: self.clone(),
+            }),
         }
     }
-    pub fn to_string_value(self) -> Result<String, String> {
+    pub fn to_string_value(self) -> Result<String, Error> {
         match self {
-            Object::Number(_) => Err("Cannot implicitly convert number to string.".to_string()),
             Object::String(string) => Ok(string),
-            Object::Boolean(_) => Err("Cannot implicitly convert boolean to string.".to_string()),
-            Object::Nil => Err("Cannot implicitly convert nil to string.".to_string()),
+            _ => Err(Error::ExpectedString { actual: self }),
         }
     }
 }
@@ -57,20 +53,19 @@ impl PartialOrd for Object {
 }
 
 impl std::ops::Add for Object {
-    type Output = Result<Self, String>;
+    type Output = Result<Self, Error>;
 
     fn add(self, rhs: Self) -> Self::Output {
         match self {
             Object::Number(number) => Ok(Object::Number(number + rhs.to_number_value()?)),
             Object::String(string) => Ok(Object::String(string + &rhs.to_string_value()?)),
-            Object::Boolean(_) => Err("Cannot add boolean.".to_string()),
-            Object::Nil => Err("Cannot add nil.".to_string()),
+            _ => Err(Error::ExpectedNumberOrString { actual: self }),
         }
     }
 }
 
 impl std::ops::Sub for Object {
-    type Output = Result<Self, String>;
+    type Output = Result<Self, Error>;
 
     fn sub(self, rhs: Self) -> Self::Output {
         self + rhs.unary_minus()?
@@ -78,33 +73,54 @@ impl std::ops::Sub for Object {
 }
 
 impl std::ops::Mul for Object {
-    type Output = Result<Self, String>;
+    type Output = Result<Self, Error>;
 
     fn mul(self, rhs: Self) -> Self::Output {
         match self {
             Object::Number(number) => Ok(Object::Number(number * rhs.to_number_value()?)),
-            Object::String(_) => Err("Cannot multiply string.".to_string()),
-            Object::Boolean(_) => Err("Cannot multiply boolean.".to_string()),
-            Object::Nil => Err("Cannot multiply nil.".to_string()),
+            _ => Err(Error::ExpectedNumber { actual: self }),
         }
     }
 }
 
 impl std::ops::Div for Object {
-    type Output = Result<Self, String>;
+    type Output = Result<Self, Error>;
 
     fn div(self, rhs: Self) -> Self::Output {
         match self {
             Object::Number(number) => {
                 let divisor = rhs.to_number_value()?;
                 if divisor == 0.0 {
-                    return Err("Cannot divide by zero".to_string());
+                    return Err(Error::DivisionByZero);
                 }
                 Ok(Object::Number(number / divisor))
             }
-            Object::String(_) => Err("Cannot divide string.".to_string()),
-            Object::Boolean(_) => Err("Cannot divide boolean.".to_string()),
-            Object::Nil => Err("Cannot divide nil.".to_string()),
+            _ => Err(Error::ExpectedNumber { actual: self }),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Error {
+    ExpectedNumber { actual: Object },
+    ExpectedString { actual: Object },
+    ExpectedNumberOrString { actual: Object },
+    DivisionByZero,
+}
+
+impl Display for Error {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::ExpectedNumber { actual } => {
+                write!(formatter, "Expected number, found {}.", actual)
+            }
+            Error::ExpectedString { actual } => {
+                write!(formatter, "Expected string, found {}.", actual)
+            }
+            Error::ExpectedNumberOrString { actual } => {
+                write!(formatter, "Expected number or string, found {}.", actual)
+            }
+            Error::DivisionByZero => write!(formatter, "Division by zero."),
         }
     }
 }
@@ -203,18 +219,14 @@ mod tests {
 
     #[test]
     fn add_numbers() {
-        assert_eq!(
-            Object::Number(1.0) + Object::Number(2.0),
-            Ok(Object::Number(3.0))
-        )
+        let result = Object::Number(1.0) + Object::Number(2.0);
+        assert_eq!(result.unwrap(), Object::Number(3.0))
     }
 
     #[test]
     fn add_strings() {
-        assert_eq!(
-            Object::String("hello".to_string()) + Object::String(" world!".to_string()),
-            Ok(Object::String("hello world!".to_string()))
-        )
+        let result = Object::String("hello".to_string()) + Object::String(" world!".to_string());
+        assert_eq!(result.unwrap(), Object::String("hello world!".to_string()))
     }
 
     #[test]
@@ -229,10 +241,8 @@ mod tests {
 
     #[test]
     fn subtract_numbers() {
-        assert_eq!(
-            Object::Number(1.0) - Object::Number(2.0),
-            Ok(Object::Number(-1.0))
-        )
+        let result = Object::Number(1.0) - Object::Number(2.0);
+        assert_eq!(result.unwrap(), Object::Number(-1.0))
     }
 
     #[test]
@@ -254,10 +264,8 @@ mod tests {
 
     #[test]
     fn multiply_number() {
-        assert_eq!(
-            Object::Number(2.0) * Object::Number(2.0),
-            Ok(Object::Number(4.0))
-        )
+        let result = Object::Number(2.0) * Object::Number(2.0);
+        assert_eq!(result.unwrap(), Object::Number(4.0))
     }
     #[test]
     fn multiply_string() {
@@ -276,10 +284,8 @@ mod tests {
 
     #[test]
     fn divide_number() {
-        assert_eq!(
-            Object::Number(2.0) / Object::Number(2.0),
-            Ok(Object::Number(1.0))
-        )
+        let result = Object::Number(2.0) / Object::Number(2.0);
+        assert_eq!(result.unwrap(), Object::Number(1.0))
     }
 
     #[test]

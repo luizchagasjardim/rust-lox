@@ -2,11 +2,11 @@ use crate::expression::*;
 use crate::object::*;
 
 pub trait Evaluate {
-    fn evaluate(self) -> Result<Object, String>;
+    fn evaluate(self) -> Result<Object, Error>;
 }
 
 impl Evaluate for Expression {
-    fn evaluate(self) -> Result<Object, String> {
+    fn evaluate(self) -> Result<Object, Error> {
         match self {
             Expression::Literal(literal) => literal.evaluate(),
             Expression::Unary {
@@ -47,7 +47,7 @@ impl Evaluate for Expression {
 }
 
 impl Evaluate for Literal {
-    fn evaluate(self) -> Result<Object, String> {
+    fn evaluate(self) -> Result<Object, Error> {
         let object = match self {
             Literal::Number(number) => Object::Number(number),
             Literal::String(string) => Object::String(string),
@@ -77,8 +77,8 @@ mod tests {
         ];
 
         for (lit, obj) in test_values {
-            let result = lit.evaluate();
-            assert_eq!(result, Ok(obj));
+            let result = lit.evaluate().unwrap();
+            assert_eq!(result, obj);
         }
     }
 
@@ -109,8 +109,8 @@ mod tests {
         ];
 
         for (input, obj) in test_values {
-            let result = input.evaluate();
-            assert_eq!(result, Ok(obj));
+            let result = input.evaluate().unwrap();
+            assert_eq!(result, obj);
         }
     }
 
@@ -199,8 +199,8 @@ mod tests {
             ),
         ];
         for (input, obj) in test_values {
-            let result = input.evaluate();
-            assert_eq!(result, Ok(obj));
+            let result = input.evaluate().unwrap();
+            assert_eq!(result, obj);
         }
     }
 }
