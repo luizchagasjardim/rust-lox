@@ -198,6 +198,9 @@ impl Parser {
         } else if self.match_string() {
             let TokenType::String(string) = self.previous() else { unreachable!() };
             Ok(Expression::Literal(Literal::String(string.clone())))
+        } else if self.match_identifier() {
+            let TokenType::Identifier(string) = self.previous() else { unreachable!() };
+            Ok(Expression::Variable(string.clone()))
         } else if self.match_token(TokenType::LeftParen) {
             let expression = self.expression();
             if self.match_token(TokenType::RightParen) {

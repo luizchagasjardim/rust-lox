@@ -42,6 +42,7 @@ impl Evaluate for Expression {
                     BinaryOperator::Division => left_value / right_value,
                 }
             }
+            Expression::Variable(string) => todo!(),
             Expression::Grouping(expression) => expression.evaluate(),
         }
     }

@@ -20,6 +20,7 @@ use result::*;
 mod scanner;
 use scanner::*;
 
+mod environment;
 mod statement;
 mod token;
 

@@ -10,6 +10,7 @@ pub enum Expression {
         operator: BinaryOperator,
         right: Box<Expression>,
     },
+    Variable(String),
     Grouping(Box<Expression>),
 }
 
@@ -60,6 +61,7 @@ impl Expression {
                 operator.to_code(),
                 right.to_code()
             ),
+            Expression::Variable(string) => todo!(),
             Expression::Grouping(expression) => format!("({})", expression.to_code()),
         }
     }
