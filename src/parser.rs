@@ -17,9 +17,25 @@ impl Parser {
     pub fn parse(mut self) -> Result<Vec<Statement>, Error> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
-            statements.push(self.statement()?);
+            statements.push(self.declaration()?);
         }
         Ok(statements)
+    }
+
+    fn declaration(&mut self) -> Result<Statement, Error> {
+        let result = if self.match_token(TokenType::Var) {
+            self.variable_declaration()
+        } else {
+            self.statement()
+        };
+        if result.is_err() {
+            self.synchronize();
+        }
+        result
+    }
+
+    fn variable_declaration(&mut self) -> Result<Statement, Error> {
+        todo!()
     }
 
     fn statement(&mut self) -> Result<Statement, Error> {

@@ -68,6 +68,10 @@ impl Evaluate for Statement {
                 Object::Nil
             }
             Statement::Expression(expression) => expression.evaluate()?,
+            Statement::VariableDeclaration{
+                identifier,
+                expression
+            } => todo!(),
         };
         Ok(statement)
     }
