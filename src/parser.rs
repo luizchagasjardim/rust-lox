@@ -1,5 +1,7 @@
 use crate::expression::*;
 use crate::result::Error;
+use crate::statement::Statement;
+use crate::token::TokenType::{Semicolon, Star};
 use crate::token::*;
 
 pub struct Parser {
@@ -12,8 +14,72 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
-    pub fn parse(mut self) -> Result<Expression, Error> {
-        self.expression()
+    pub fn parse(mut self) -> Result<Vec<Statement>, Error> {
+        let mut statements = Vec::new();
+        while !self.is_at_end() {
+            statements.push(self.declaration()?);
+        }
+        Ok(statements)
+    }
+
+    fn declaration(&mut self) -> Result<Statement, Error> {
+        let result = if self.match_token(TokenType::Var) {
+            self.variable_declaration()
+        } else {
+            self.statement()
+        };
+        if result.is_err() {
+            self.synchronize();
+        }
+        result
+    }
+
+    fn variable_declaration(&mut self) -> Result<Statement, Error> {
+        if !self.match_identifier() {
+            return Err(Error::ExpectedEndOfExpression);
+        }
+        let TokenType::Identifier(identifier) = self.previous() else { unreachable!() };
+        let identifier = identifier.clone();
+        // this is equivalent to being null
+        let initializer = if self.match_token(TokenType::Equal) {
+            Some(self.expression()?)
+        } else {
+            None
+        };
+
+        if !self.match_token(Semicolon) {
+            return Err(Error::ExpectedEndOfExpression);
+        }
+        Ok(Statement::VariableDeclaration {
+            identifier: identifier.clone(),
+            expression: initializer,
+        })
+    }
+
+    fn statement(&mut self) -> Result<Statement, Error> {
+        if self.match_token(TokenType::Print) {
+            self.print_statement()
+        } else {
+            self.expression_statement()
+        }
+    }
+
+    fn print_statement(&mut self) -> Result<Statement, Error> {
+        let value = self.expression();
+        if self.match_token(Semicolon) {
+            Err(Error::ExpectedEndOfExpression)
+        } else {
+            Ok(Statement::Print(value?))
+        }
+    }
+
+    fn expression_statement(&mut self) -> Result<Statement, Error> {
+        let value = self.expression();
+        if self.match_token(Semicolon) {
+            Err(Error::ExpectedEndOfExpression)
+        } else {
+            Ok(Statement::Expression(value?))
+        }
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {
@@ -132,6 +198,9 @@ impl Parser {
         } else if self.match_string() {
             let TokenType::String(string) = self.previous() else { unreachable!() };
             Ok(Expression::Literal(Literal::String(string.clone())))
+        } else if self.match_identifier() {
+            let TokenType::Identifier(string) = self.previous() else { unreachable!() };
+            Ok(Expression::Variable(string.clone()))
         } else if self.match_token(TokenType::LeftParen) {
             let expression = self.expression();
             if self.match_token(TokenType::RightParen) {
@@ -154,6 +223,17 @@ impl Parser {
             return true;
         }
         false
+    }
+
+    fn match_identifier(&mut self) -> bool {
+        if self.is_at_end() {
+            return false;
+        }
+        let TokenType::Identifier(_) = self.peek().token_type else {
+            return false;
+        };
+        self.advance();
+        true
     }
 
     fn match_number(&mut self) -> bool {
