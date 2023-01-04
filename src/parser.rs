@@ -1,5 +1,7 @@
 use crate::expression::*;
 use crate::result::Error;
+use crate::statement::Statement;
+use crate::token::TokenType::Semicolon;
 use crate::token::*;
 
 pub struct Parser {
@@ -12,8 +14,38 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
-    pub fn parse(mut self) -> Result<Expression, Error> {
-        self.expression()
+    pub fn parse(mut self) -> Result<Vec<Statement>, Error> {
+        let mut statements = Vec::new();
+        while !self.is_at_end() {
+            statements.push(self.statement()?);
+        }
+        Ok(statements)
+    }
+
+    fn statement(&mut self) -> Result<Statement, Error> {
+        if self.match_token(TokenType::Print) {
+            self.print_statement()
+        } else {
+            self.expression_statement()
+        }
+    }
+
+    fn print_statement(&mut self) -> Result<Statement, Error> {
+        let value = self.expression();
+        if self.match_token(Semicolon) {
+            Err(Error::ExpectedEndOfExpression)
+        } else {
+            Ok(Statement::Print(value?))
+        }
+    }
+
+    fn expression_statement(&mut self) -> Result<Statement, Error> {
+        let value = self.expression();
+        if self.match_token(Semicolon) {
+            Err(Error::ExpectedEndOfExpression)
+        } else {
+            Ok(Statement::Expression(value?))
+        }
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {

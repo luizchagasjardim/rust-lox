@@ -1,5 +1,6 @@
 use crate::expression::*;
 use crate::object::*;
+use crate::statement::Statement;
 
 pub trait Evaluate {
     fn evaluate(self) -> Result<Object, Error>;
@@ -59,6 +60,19 @@ impl Evaluate for Literal {
     }
 }
 
+impl Evaluate for Statement {
+    fn evaluate(self) -> Result<Object, Error> {
+        let statement = match self {
+            Statement::Print(expression) => {
+                println!("{}", expression.evaluate()?);
+                Object::Nil
+            }
+            Statement::Expression(expression) => expression.evaluate()?,
+        };
+        Ok(statement)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -68,7 +82,11 @@ mod tests {
         let test_values = vec![
             (Literal::Number(123.4), Object::Number(123.4)),
             (
-                Literal::String("hello".to_string()),
+                Literal::String(
+                    "hello
+            }"
+                    .to_string(),
+                ),
                 Object::String("hello".to_string()),
             ),
             (Literal::True, Object::Boolean(true)),
