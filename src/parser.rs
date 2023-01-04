@@ -1,7 +1,7 @@
 use crate::expression::*;
 use crate::result::Error;
 use crate::statement::Statement;
-use crate::token::TokenType::Semicolon;
+use crate::token::TokenType::{Semicolon, Star};
 use crate::token::*;
 
 pub struct Parser {
@@ -35,7 +35,25 @@ impl Parser {
     }
 
     fn variable_declaration(&mut self) -> Result<Statement, Error> {
-        todo!()
+        if !self.match_identifier() {
+            return Err(Error::ExpectedEndOfExpression);
+        }
+        let TokenType::Identifier(identifier) = self.previous() else { unreachable!() };
+        let identifier = identifier.clone();
+        // this is equivalent to being null
+        let initializer = if self.match_token(TokenType::Equal) {
+            Some(self.expression()?)
+        } else {
+            None
+        };
+
+        if !self.match_token(Semicolon) {
+            return Err(Error::ExpectedEndOfExpression);
+        }
+        Ok(Statement::VariableDeclaration {
+            identifier: identifier.clone(),
+            expression: initializer,
+        })
     }
 
     fn statement(&mut self) -> Result<Statement, Error> {
@@ -202,6 +220,17 @@ impl Parser {
             return true;
         }
         false
+    }
+
+    fn match_identifier(&mut self) -> bool {
+        if self.is_at_end() {
+            return false;
+        }
+        let TokenType::Identifier(_) = self.peek().token_type else {
+            return false;
+        };
+        self.advance();
+        true
     }
 
     fn match_number(&mut self) -> bool {

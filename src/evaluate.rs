@@ -68,10 +68,16 @@ impl Evaluate for Statement {
                 Object::Nil
             }
             Statement::Expression(expression) => expression.evaluate()?,
-            Statement::VariableDeclaration{
+            Statement::VariableDeclaration {
                 identifier,
-                expression
-            } => todo!(),
+                expression,
+            } => {
+                if let Some(expression) = expression {
+                    expression.evaluate()?
+                } else {
+                    Object::Nil
+                }
+            }
         };
         Ok(statement)
     }
