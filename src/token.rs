@@ -110,12 +110,6 @@ pub struct Token {
     pub start: usize,
 }
 
-impl Token {
-    pub fn new(token_type: TokenType, start: usize) -> Token {
-        Token { token_type, start }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
