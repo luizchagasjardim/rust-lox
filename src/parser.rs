@@ -1,7 +1,6 @@
 use crate::expression::*;
 use crate::result::Error;
 use crate::statement::Statement;
-use crate::token::TokenType::{Semicolon, Star};
 use crate::token::*;
 
 pub struct Parser {
@@ -47,7 +46,7 @@ impl Parser {
             None
         };
 
-        if !self.match_token(Semicolon) {
+        if !self.match_token(TokenType::Semicolon) {
             return Err(Error::ExpectedEndOfExpression);
         }
         Ok(Statement::VariableDeclaration {
@@ -66,7 +65,7 @@ impl Parser {
 
     fn print_statement(&mut self) -> Result<Statement, Error> {
         let value = self.expression();
-        if self.match_token(Semicolon) {
+        if self.match_token(TokenType::Semicolon) {
             Err(Error::ExpectedEndOfExpression)
         } else {
             Ok(Statement::Print(value?))
@@ -75,7 +74,7 @@ impl Parser {
 
     fn expression_statement(&mut self) -> Result<Statement, Error> {
         let value = self.expression();
-        if self.match_token(Semicolon) {
+        if self.match_token(TokenType::Semicolon) {
             Err(Error::ExpectedEndOfExpression)
         } else {
             Ok(Statement::Expression(value?))

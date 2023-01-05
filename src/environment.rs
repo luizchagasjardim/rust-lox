@@ -1,5 +1,4 @@
 use crate::object::Object;
-use crate::token::Token;
 use std::collections::HashMap;
 
 pub struct Environment {
