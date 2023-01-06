@@ -65,7 +65,7 @@ impl Parser {
 
     fn print_statement(&mut self) -> Result<Statement, Error> {
         let value = self.expression();
-        if self.match_token(TokenType::Semicolon) {
+        if !self.match_token(TokenType::Semicolon) {
             Err(Error::ExpectedEndOfExpression)
         } else {
             Ok(Statement::Print(value?))
