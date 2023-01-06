@@ -1,14 +1,20 @@
+use crate::environment::Environment;
 use crate::evaluate::*;
 use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
 
-pub struct Interpreter;
+pub struct Interpreter {
+    environment: Environment,
+}
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter
+        Interpreter {
+            environment: Environment::new(),
+        }
     }
+
     pub fn repl(mut self) -> Result<()> {
         for line_number in 0..usize::MAX {
             let input = Self::read()?;
@@ -39,7 +45,6 @@ impl Interpreter {
 
     fn read() -> Result<String> {
         use std::io::{stdin, stdout, Write};
-
         print!(">");
         stdout().flush().unwrap();
         let mut input = String::new();
@@ -63,10 +68,12 @@ impl Interpreter {
 
         statements
             .into_iter()
-            .map(|statement| match statement.evaluate() {
-                Ok(object) => Ok(object.to_string()),
-                Err(message) => Err(Error::EvaluationError(message)),
-            })
+            .map(
+                |statement| match statement.evaluate(&mut self.environment) {
+                    Ok(object) => Ok(object.to_string()),
+                    Err(message) => Err(Error::EvaluationError(message)),
+                },
+            )
             .collect()
     }
 }
