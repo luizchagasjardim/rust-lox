@@ -6,6 +6,7 @@ use exitcode;
 #[derive(Debug)]
 pub enum Error {
     EvaluationError(ObjectError),
+    ExpectedEndOfBlock,
     ExpectedEndOfExpression,
     ExpectedExpression { position: usize },
     InvalidAssignmentTarget,
@@ -23,6 +24,7 @@ impl Error {
     pub fn exit_code(&self) -> i32 {
         match &self {
             Error::EvaluationError(_) => exitcode::USAGE,
+            Error::ExpectedEndOfBlock => exitcode::USAGE,
             Error::ExpectedEndOfExpression => exitcode::USAGE,
             Error::ExpectedExpression { .. } => exitcode::USAGE,
             Error::IoError(_) => exitcode::IOERR,

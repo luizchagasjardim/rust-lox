@@ -59,12 +59,24 @@ impl Parser {
         if self.match_token(TokenType::Print) {
             self.print_statement()
         } else if self.match_token(TokenType::LeftBrace) {
-            Ok(Statement::Block(Vec::new()))
+            self.block()
         } else {
             self.expression_statement()
         }
     }
 
+    fn block(&mut self) -> Result<Statement, Error> {
+        let mut statements = Vec::new();
+        while !self.check(TokenType::RightBrace) && !self.is_at_end() {
+            statements.push(self.declaration()?);
+        }
+        if self.match_token(TokenType::RightBrace) {
+            self.advance();
+            Ok(Statement::Block(statements))
+        } else {
+            Err(Error::ExpectedEndOfBlock)
+        }
+    }
     fn print_statement(&mut self) -> Result<Statement, Error> {
         let value = self.expression();
         if !self.match_token(TokenType::Semicolon) {

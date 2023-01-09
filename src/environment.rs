@@ -1,27 +1,26 @@
 use crate::object::{Error, Object};
 use std::collections::HashMap;
 
-#[derive(Clone)]
-pub struct Environment {
+pub struct Environment<'a> {
     values: HashMap<String, Object>,
-    enclosing: Option<Box<Environment>>,
+    enclosing: Option<&'a mut Environment<'a>>,
 }
 
-impl Environment {
-    pub fn new() -> Environment {
+impl<'a> Environment<'a> {
+    pub fn new() -> Environment<'a> {
         Environment {
             values: HashMap::new(),
             enclosing: None,
         }
     }
 
-    pub fn child(env: Environment) -> Environment {
-        Environment {
+    pub fn child<'b>(env: &'a mut Environment<'b> ) -> Environment<'a> where 'b:'a {
+        Environment::<'a> {
             values: HashMap::new(),
-            enclosing: Some(Box::from(env)),
+            enclosing: Some(env),
         }
     }
-
+    // pai pai.child(pai)
     pub fn define(&mut self, name: String, value: Object) {
         self.values.insert(name, value);
     }

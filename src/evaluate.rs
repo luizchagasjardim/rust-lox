@@ -1,14 +1,15 @@
+use std::io::empty;
 use crate::environment::Environment;
 use crate::expression::*;
 use crate::object::*;
 use crate::statement::Statement;
 
 pub trait Evaluate {
-    fn evaluate(self, environment: &mut Environment) -> Result<Object, Error>;
+    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a;
 }
 
 impl Evaluate for Expression {
-    fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
+    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a {
         match self {
             Expression::Literal(literal) => literal.evaluate(environment),
             Expression::Unary {
@@ -44,16 +45,17 @@ impl Evaluate for Expression {
                 }
             }
             Expression::Variable(string) => environment.get(&string),
-            Expression::Assignment { identifier, value } => environment
-                .clone()
-                .assign(identifier, value.evaluate(environment)?),
+            Expression::Assignment { identifier, value } => {
+                let value = value.evaluate(environment)?;
+                environment.assign(identifier, value)
+            },
             Expression::Grouping(expression) => expression.evaluate(environment),
         }
     }
 }
 
 impl Evaluate for Literal {
-    fn evaluate(self, _environment: &mut Environment) -> Result<Object, Error> {
+    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a {
         let object = match self {
             Literal::Number(number) => Object::Number(number),
             Literal::String(string) => Object::String(string),
@@ -66,7 +68,7 @@ impl Evaluate for Literal {
 }
 
 impl Evaluate for Statement {
-    fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
+    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a {
         let statement = match self {
             Statement::Print(expression) => {
                 println!("{}", expression.evaluate(environment)?);
@@ -85,8 +87,12 @@ impl Evaluate for Statement {
                 environment.define(identifier, value.clone());
                 value
             }
-            Statement::Block(vec) => {
-                todo!()
+            Statement::Block(statements) => {
+                let mut block_env = Environment::<'a>::child(environment);
+                for statement in statements {
+                    statement.evaluate(&mut block_env)?;
+                }
+                Object::Nil
             }
         };
         Ok(statement)

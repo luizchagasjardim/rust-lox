@@ -4,12 +4,12 @@ use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
 
-pub struct Interpreter {
-    environment: Environment,
+pub struct Interpreter<'a> {
+    environment: Environment<'a>,
 }
 
-impl Interpreter {
-    pub fn new() -> Interpreter {
+impl Interpreter<'_> {
+    pub fn new<'a>() -> Interpreter<'a> {
         Interpreter {
             environment: Environment::new(),
         }
