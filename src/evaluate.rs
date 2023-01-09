@@ -44,7 +44,9 @@ impl Evaluate for Expression {
                 }
             }
             Expression::Variable(string) => environment.get(&string),
-            Expression::Assignment { identifier, value } => environment.clone().assign(identifier, value.evaluate(environment)?),
+            Expression::Assignment { identifier, value } => environment
+                .clone()
+                .assign(identifier, value.evaluate(environment)?),
             Expression::Grouping(expression) => expression.evaluate(environment),
         }
     }
@@ -82,6 +84,9 @@ impl Evaluate for Statement {
                 };
                 environment.define(identifier, value.clone());
                 value
+            }
+            Statement::Block(vec) => {
+                todo!()
             }
         };
         Ok(statement)

@@ -58,6 +58,8 @@ impl Parser {
     fn statement(&mut self) -> Result<Statement, Error> {
         if self.match_token(TokenType::Print) {
             self.print_statement()
+        } else if self.match_token(TokenType::LeftBrace) {
+            Ok(Statement::Block(Vec::new()))
         } else {
             self.expression_statement()
         }
@@ -98,7 +100,7 @@ impl Parser {
                 })
             } else {
                 Err(Error::InvalidAssignmentTarget)
-            }
+            };
         }
         Ok(expr)
     }
