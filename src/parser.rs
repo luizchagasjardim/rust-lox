@@ -82,7 +82,25 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {
-        self.equality()
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Result<Expression, Error> {
+        let expr = self.equality()?;
+
+        if self.match_token(TokenType::Equal) {
+            let equals = self.previous();
+            let value = self.assignment()?;
+            return if let Expression::Variable(identifier) = expr {
+                Ok(Expression::Assignment {
+                    identifier,
+                    value: Box::new(value),
+                })
+            } else {
+                Err(Error::InvalidAssignmentTarget)
+            }
+        }
+        Ok(expr)
     }
 
     fn equality(&mut self) -> Result<Expression, Error> {

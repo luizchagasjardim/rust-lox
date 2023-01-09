@@ -1,6 +1,7 @@
 use crate::object::{Error, Object};
 use std::collections::HashMap;
 
+#[derive(Clone)]
 pub struct Environment {
     values: HashMap<String, Object>,
 }
@@ -20,5 +21,14 @@ impl Environment {
             return Err(Error::UndefinedVariable);
         };
         Ok(value.clone())
+    }
+
+    pub fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
+        if self.values.contains_key(&*name) {
+            if let Some(val) = self.values.insert(name, value) {
+                return Ok(val);
+            };
+        }
+        Err(Error::UndefinedVariable)
     }
 }
