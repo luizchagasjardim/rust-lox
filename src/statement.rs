@@ -7,4 +7,5 @@ pub enum Statement {
         identifier: String,
         expression: Option<Expression>,
     },
+    Block(Vec<Statement>),
 }

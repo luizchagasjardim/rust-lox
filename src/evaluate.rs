@@ -1,20 +1,22 @@
+use std::io::empty;
+use crate::environment::Environment;
 use crate::expression::*;
 use crate::object::*;
 use crate::statement::Statement;
 
 pub trait Evaluate {
-    fn evaluate(self) -> Result<Object, Error>;
+    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a;
 }
 
 impl Evaluate for Expression {
-    fn evaluate(self) -> Result<Object, Error> {
+    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a {
         match self {
-            Expression::Literal(literal) => literal.evaluate(),
+            Expression::Literal(literal) => literal.evaluate(environment),
             Expression::Unary {
                 operator,
                 expression,
             } => {
-                let expresssion_value = expression.evaluate()?;
+                let expresssion_value = expression.evaluate(environment)?;
                 match operator {
                     UnaryOperator::Negation => Ok(Object::Boolean(!expresssion_value.is_truthy())),
                     UnaryOperator::Minus => expresssion_value.unary_minus(),
@@ -25,8 +27,8 @@ impl Evaluate for Expression {
                 operator,
                 right,
             } => {
-                let left_value = left.evaluate()?;
-                let right_value = right.evaluate()?;
+                let left_value = left.evaluate(environment)?;
+                let right_value = right.evaluate(environment)?;
                 match operator {
                     BinaryOperator::Equality => Ok(Object::Boolean(left_value == right_value)),
                     BinaryOperator::Different => Ok(Object::Boolean(left_value != right_value)),
@@ -42,14 +44,18 @@ impl Evaluate for Expression {
                     BinaryOperator::Division => left_value / right_value,
                 }
             }
-            Expression::Variable(string) => todo!(),
-            Expression::Grouping(expression) => expression.evaluate(),
+            Expression::Variable(string) => environment.get(&string),
+            Expression::Assignment { identifier, value } => {
+                let value = value.evaluate(environment)?;
+                environment.assign(identifier, value)
+            },
+            Expression::Grouping(expression) => expression.evaluate(environment),
         }
     }
 }
 
 impl Evaluate for Literal {
-    fn evaluate(self) -> Result<Object, Error> {
+    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a {
         let object = match self {
             Literal::Number(number) => Object::Number(number),
             Literal::String(string) => Object::String(string),
@@ -62,22 +68,31 @@ impl Evaluate for Literal {
 }
 
 impl Evaluate for Statement {
-    fn evaluate(self) -> Result<Object, Error> {
+    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a {
         let statement = match self {
             Statement::Print(expression) => {
-                println!("{}", expression.evaluate()?);
+                println!("{}", expression.evaluate(environment)?);
                 Object::Nil
             }
-            Statement::Expression(expression) => expression.evaluate()?,
+            Statement::Expression(expression) => expression.evaluate(environment)?,
             Statement::VariableDeclaration {
                 identifier,
                 expression,
             } => {
-                if let Some(expression) = expression {
-                    expression.evaluate()?
+                let value = if let Some(expression) = expression {
+                    expression.evaluate(environment)?
                 } else {
                     Object::Nil
+                };
+                environment.define(identifier, value.clone());
+                value
+            }
+            Statement::Block(statements) => {
+                let mut block_env = Environment::<'a>::child(environment);
+                for statement in statements {
+                    statement.evaluate(&mut block_env)?;
                 }
+                Object::Nil
             }
         };
         Ok(statement)

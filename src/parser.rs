@@ -58,14 +58,28 @@ impl Parser {
     fn statement(&mut self) -> Result<Statement, Error> {
         if self.match_token(TokenType::Print) {
             self.print_statement()
+        } else if self.match_token(TokenType::LeftBrace) {
+            self.block()
         } else {
             self.expression_statement()
         }
     }
 
+    fn block(&mut self) -> Result<Statement, Error> {
+        let mut statements = Vec::new();
+        while !self.check(TokenType::RightBrace) && !self.is_at_end() {
+            statements.push(self.declaration()?);
+        }
+        if self.match_token(TokenType::RightBrace) {
+            self.advance();
+            Ok(Statement::Block(statements))
+        } else {
+            Err(Error::ExpectedEndOfBlock)
+        }
+    }
     fn print_statement(&mut self) -> Result<Statement, Error> {
         let value = self.expression();
-        if self.match_token(TokenType::Semicolon) {
+        if !self.match_token(TokenType::Semicolon) {
             Err(Error::ExpectedEndOfExpression)
         } else {
             Ok(Statement::Print(value?))
@@ -82,7 +96,25 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {
-        self.equality()
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Result<Expression, Error> {
+        let expr = self.equality()?;
+
+        if self.match_token(TokenType::Equal) {
+            let equals = self.previous();
+            let value = self.assignment()?;
+            return if let Expression::Variable(identifier) = expr {
+                Ok(Expression::Assignment {
+                    identifier,
+                    value: Box::new(value),
+                })
+            } else {
+                Err(Error::InvalidAssignmentTarget)
+            };
+        }
+        Ok(expr)
     }
 
     fn equality(&mut self) -> Result<Expression, Error> {
