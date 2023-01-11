@@ -3,6 +3,7 @@ use crate::object::{Error, Object};
 use std::collections::HashMap;
 use std::rc::Rc;
 
+#[derive(Clone)]
 pub struct Environment(Rc<RefCell<EnvironmentInner>>);
 
 impl Environment {
@@ -10,7 +11,7 @@ impl Environment {
         Environment(Rc::new(RefCell::new(EnvironmentInner::new())))
     }
     pub fn new_child(&self) -> Environment {
-        EnvironmentInner::child(self)
+        Environment(Rc::new(RefCell::new(EnvironmentInner::new_child(self))))
     }
     pub fn define(&mut self, name: String, value: Object) {
         (*self.0).borrow_mut().define(name, value)
@@ -23,31 +24,31 @@ impl Environment {
     }
 }
 
-pub struct EnvironmentInner {
+struct EnvironmentInner {
     values: HashMap<String, Object>,
     enclosing: Option<Environment>,
 }
 
 impl EnvironmentInner {
-    pub fn new() -> EnvironmentInner {
+    fn new() -> EnvironmentInner {
         EnvironmentInner {
             values: HashMap::new(),
             enclosing: None,
         }
     }
 
-    pub fn child(env: &Environment) -> Environment {
-        Environment(Rc::new(RefCell::new(EnvironmentInner {
+    fn new_child(enclosing: &Environment) -> EnvironmentInner {
+        EnvironmentInner {
             values: HashMap::new(),
-            enclosing: Some(Environment(Rc::clone(&env.0))),
-        })))
+            enclosing: Some(enclosing.clone()),
+        }
     }
 
-    pub fn define(&mut self, name: String, value: Object) {
+    fn define(&mut self, name: String, value: Object) {
         self.values.insert(name, value);
     }
 
-    pub fn get(&self, name: &String) -> Result<Object, Error> {
+    fn get(&self, name: &String) -> Result<Object, Error> {
         let Some(value) = self.values.get(name) else {
             let Some(enclosing) = &self.enclosing else {
                 return Err(Error::UndefinedVariable);
@@ -57,7 +58,7 @@ impl EnvironmentInner {
         Ok(value.clone())
     }
 
-    pub fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
+    fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
         if self.values.contains_key(&*name) {
             if let Some(val) = self.values.insert(name.clone(), value.clone()) {
                 if let Some(enclosing) = &mut self.enclosing {
