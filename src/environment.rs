@@ -3,21 +3,21 @@ use crate::object::{Error, Object};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub struct Environment {
+pub struct EnvironmentInner {
     values: HashMap<String, Object>,
-    enclosing: Option<Rc<RefCell<Environment>>>,
+    enclosing: Option<Rc<RefCell<EnvironmentInner>>>,
 }
 
-impl Environment {
-    pub fn new() -> Environment {
-        Environment {
+impl EnvironmentInner {
+    pub fn new() -> EnvironmentInner {
+        EnvironmentInner {
             values: HashMap::new(),
             enclosing: None,
         }
     }
 
-    pub fn child(env: &Rc<RefCell<Environment>>) -> Rc<RefCell<Environment>> {
-        Rc::new(RefCell::new(Environment {
+    pub fn child(env: &Rc<RefCell<EnvironmentInner>>) -> Rc<RefCell<EnvironmentInner>> {
+        Rc::new(RefCell::new(EnvironmentInner {
             values: HashMap::new(),
             enclosing: Some(Rc::clone(env)),
         }))

@@ -1,17 +1,17 @@
 use std::cell::RefCell;
 use std::io::empty;
 use std::rc::Rc;
-use crate::environment::Environment;
+use crate::environment::EnvironmentInner;
 use crate::expression::*;
 use crate::object::*;
 use crate::statement::Statement;
 
 pub trait Evaluate {
-    fn evaluate(self, environment: &Rc<RefCell<Environment>>) -> Result<Object, Error>;
+    fn evaluate(self, environment: &Rc<RefCell<EnvironmentInner>>) -> Result<Object, Error>;
 }
 
 impl Evaluate for Expression {
-    fn evaluate(self, environment: &Rc<RefCell<Environment>>) -> Result<Object, Error> {
+    fn evaluate(self, environment: &Rc<RefCell<EnvironmentInner>>) -> Result<Object, Error> {
         match self {
             Expression::Literal(literal) => literal.evaluate(environment),
             Expression::Unary {
@@ -57,7 +57,7 @@ impl Evaluate for Expression {
 }
 
 impl Evaluate for Literal {
-    fn evaluate(self, environment: &Rc<RefCell<Environment>>) -> Result<Object, Error> {
+    fn evaluate(self, environment: &Rc<RefCell<EnvironmentInner>>) -> Result<Object, Error> {
         let object = match self {
             Literal::Number(number) => Object::Number(number),
             Literal::String(string) => Object::String(string),
@@ -70,7 +70,7 @@ impl Evaluate for Literal {
 }
 
 impl Evaluate for Statement {
-    fn evaluate(self, environment: &Rc<RefCell<Environment>>) -> Result<Object, Error> {
+    fn evaluate(self, environment: &Rc<RefCell<EnvironmentInner>>) -> Result<Object, Error> {
         let statement = match self {
             Statement::Print(expression) => {
                 println!("{}", expression.evaluate(environment)?);
@@ -90,7 +90,7 @@ impl Evaluate for Statement {
                 value
             }
             Statement::Block(statements) => {
-                let mut block_env = Environment::child(environment);
+                let mut block_env = EnvironmentInner::child(environment);
                 for statement in statements {
                     statement.evaluate(&mut block_env)?;
                 }
