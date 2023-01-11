@@ -7,11 +7,11 @@ use crate::object::*;
 use crate::statement::Statement;
 
 pub trait Evaluate {
-    fn evaluate(self, environment: &Environment) -> Result<Object, Error>;
+    fn evaluate(self, environment: &mut Environment) -> Result<Object, Error>;
 }
 
 impl Evaluate for Expression {
-    fn evaluate(self, environment: &Environment) -> Result<Object, Error> {
+    fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
         match self {
             Expression::Literal(literal) => literal.evaluate(environment),
             Expression::Unary {
@@ -46,10 +46,10 @@ impl Evaluate for Expression {
                     BinaryOperator::Division => left_value / right_value,
                 }
             }
-            Expression::Variable(string) => environment.borrow().get(&string),
+            Expression::Variable(string) => environment.get(&string),
             Expression::Assignment { identifier, value } => {
                 let value = value.evaluate(environment)?;
-                environment.borrow_mut().assign(identifier, value)
+                environment.assign(identifier, value)
             },
             Expression::Grouping(expression) => expression.evaluate(environment),
         }
@@ -57,7 +57,7 @@ impl Evaluate for Expression {
 }
 
 impl Evaluate for Literal {
-    fn evaluate(self, environment: &Environment) -> Result<Object, Error> {
+    fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
         let object = match self {
             Literal::Number(number) => Object::Number(number),
             Literal::String(string) => Object::String(string),
@@ -70,7 +70,7 @@ impl Evaluate for Literal {
 }
 
 impl Evaluate for Statement {
-    fn evaluate(self, environment: &Environment) -> Result<Object, Error> {
+    fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
         let statement = match self {
             Statement::Print(expression) => {
                 println!("{}", expression.evaluate(environment)?);
@@ -86,7 +86,7 @@ impl Evaluate for Statement {
                 } else {
                     Object::Nil
                 };
-                environment.borrow_mut().define(identifier, value.clone());
+                environment.define(identifier, value.clone());
                 value
             }
             Statement::Block(statements) => {
