@@ -1,11 +1,31 @@
 use std::cell::RefCell;
 use crate::object::{Error, Object};
 use std::collections::HashMap;
+use std::ops::Deref;
 use std::rc::Rc;
+
+pub struct Environment(Rc<RefCell<EnvironmentInner>>);
+
+impl Deref for Environment {
+    type Target = Rc<RefCell<EnvironmentInner>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl Environment {
+    pub fn new() -> Environment {
+        Environment(Rc::new(RefCell::new(EnvironmentInner::new())))
+    }
+    pub fn new_child(&self) -> Environment {
+        EnvironmentInner::child(self)
+    }
+}
 
 pub struct EnvironmentInner {
     values: HashMap<String, Object>,
-    enclosing: Option<Rc<RefCell<EnvironmentInner>>>,
+    enclosing: Option<Environment>,
 }
 
 impl EnvironmentInner {
@@ -16,11 +36,11 @@ impl EnvironmentInner {
         }
     }
 
-    pub fn child(env: &Rc<RefCell<EnvironmentInner>>) -> Rc<RefCell<EnvironmentInner>> {
-        Rc::new(RefCell::new(EnvironmentInner {
+    pub fn child(env: &Environment) -> Environment {
+        Environment(Rc::new(RefCell::new(EnvironmentInner {
             values: HashMap::new(),
-            enclosing: Some(Rc::clone(env)),
-        }))
+            enclosing: Some(Environment(Rc::clone(&env.0))),
+        })))
     }
     // pai pai.child(pai)
     pub fn define(&mut self, name: String, value: Object) {

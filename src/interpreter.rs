@@ -1,19 +1,19 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::environment::EnvironmentInner;
+use crate::environment::Environment;
 use crate::evaluate::*;
 use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
 
 pub struct Interpreter {
-    environment: Rc<RefCell<EnvironmentInner>>,
+    environment: Environment,
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
-            environment: Rc::new(RefCell::new(EnvironmentInner::new())),
+            environment: Environment::new(),
         }
     }
 
