@@ -1,24 +1,26 @@
+use std::cell::RefCell;
 use crate::object::{Error, Object};
 use std::collections::HashMap;
+use std::rc::Rc;
 
-pub struct Environment<'a> {
+pub struct Environment {
     values: HashMap<String, Object>,
-    enclosing: Option<&'a mut Environment<'a>>,
+    enclosing: Option<Rc<RefCell<Environment>>>,
 }
 
-impl<'a> Environment<'a> {
-    pub fn new() -> Environment<'a> {
+impl Environment {
+    pub fn new() -> Environment {
         Environment {
             values: HashMap::new(),
             enclosing: None,
         }
     }
 
-    pub fn child<'b>(env: &'a mut Environment<'b> ) -> Environment<'a> where 'b:'a {
-        Environment::<'a> {
+    pub fn child(env: &Rc<RefCell<Environment>>) -> Rc<RefCell<Environment>> {
+        Rc::new(RefCell::new(Environment {
             values: HashMap::new(),
-            enclosing: Some(env),
-        }
+            enclosing: Some(Rc::clone(env)),
+        }))
     }
     // pai pai.child(pai)
     pub fn define(&mut self, name: String, value: Object) {
@@ -30,7 +32,7 @@ impl<'a> Environment<'a> {
             let Some(enclosing) = &self.enclosing else {
                 return Err(Error::UndefinedVariable);
             };
-            return enclosing.get(name);
+            return enclosing.borrow().get(name);
         };
         Ok(value.clone())
     }
@@ -39,7 +41,7 @@ impl<'a> Environment<'a> {
         if self.values.contains_key(&*name) {
             if let Some(val) = self.values.insert(name.clone(), value.clone()) {
                 if let Some(enclosing) = &mut self.enclosing {
-                    return enclosing.assign(name, value);
+                    return enclosing.borrow_mut().assign(name, value);
                 }
                 return Ok(val);
             };

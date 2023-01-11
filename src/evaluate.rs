@@ -1,15 +1,17 @@
+use std::cell::RefCell;
 use std::io::empty;
+use std::rc::Rc;
 use crate::environment::Environment;
 use crate::expression::*;
 use crate::object::*;
 use crate::statement::Statement;
 
 pub trait Evaluate {
-    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a;
+    fn evaluate(self, environment: &Rc<RefCell<Environment>>) -> Result<Object, Error>;
 }
 
 impl Evaluate for Expression {
-    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a {
+    fn evaluate(self, environment: &Rc<RefCell<Environment>>) -> Result<Object, Error> {
         match self {
             Expression::Literal(literal) => literal.evaluate(environment),
             Expression::Unary {
@@ -44,10 +46,10 @@ impl Evaluate for Expression {
                     BinaryOperator::Division => left_value / right_value,
                 }
             }
-            Expression::Variable(string) => environment.get(&string),
+            Expression::Variable(string) => environment.borrow().get(&string),
             Expression::Assignment { identifier, value } => {
                 let value = value.evaluate(environment)?;
-                environment.assign(identifier, value)
+                environment.borrow_mut().assign(identifier, value)
             },
             Expression::Grouping(expression) => expression.evaluate(environment),
         }
@@ -55,7 +57,7 @@ impl Evaluate for Expression {
 }
 
 impl Evaluate for Literal {
-    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a {
+    fn evaluate(self, environment: &Rc<RefCell<Environment>>) -> Result<Object, Error> {
         let object = match self {
             Literal::Number(number) => Object::Number(number),
             Literal::String(string) => Object::String(string),
@@ -68,7 +70,7 @@ impl Evaluate for Literal {
 }
 
 impl Evaluate for Statement {
-    fn evaluate<'a, 'b>(self, environment: &'a mut Environment<'b>) -> Result<Object, Error> where 'b:'a {
+    fn evaluate(self, environment: &Rc<RefCell<Environment>>) -> Result<Object, Error> {
         let statement = match self {
             Statement::Print(expression) => {
                 println!("{}", expression.evaluate(environment)?);
@@ -84,11 +86,11 @@ impl Evaluate for Statement {
                 } else {
                     Object::Nil
                 };
-                environment.define(identifier, value.clone());
+                environment.borrow_mut().define(identifier, value.clone());
                 value
             }
             Statement::Block(statements) => {
-                let mut block_env = Environment::<'a>::child(environment);
+                let mut block_env = Environment::child(environment);
                 for statement in statements {
                     statement.evaluate(&mut block_env)?;
                 }
