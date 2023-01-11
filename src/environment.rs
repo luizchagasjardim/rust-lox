@@ -1,8 +1,6 @@
-use std::borrow::BorrowMut;
 use std::cell::RefCell;
 use crate::object::{Error, Object};
 use std::collections::HashMap;
-use std::ops::Deref;
 use std::rc::Rc;
 
 pub struct Environment(Rc<RefCell<EnvironmentInner>>);

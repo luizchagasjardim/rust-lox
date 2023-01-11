@@ -103,7 +103,6 @@ impl Parser {
         let expr = self.equality()?;
 
         if self.match_token(TokenType::Equal) {
-            let equals = self.previous();
             let value = self.assignment()?;
             return if let Expression::Variable(identifier) = expr {
                 Ok(Expression::Assignment {

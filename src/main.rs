@@ -1,5 +1,3 @@
-#![feature(let_else)]
-
 extern crate exitcode;
 
 use clap::Parser as ClapParser;

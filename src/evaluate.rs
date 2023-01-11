@@ -1,6 +1,3 @@
-use std::cell::RefCell;
-use std::io::empty;
-use std::rc::Rc;
 use crate::environment::Environment;
 use crate::expression::*;
 use crate::object::*;
@@ -57,7 +54,7 @@ impl Evaluate for Expression {
 }
 
 impl Evaluate for Literal {
-    fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
+    fn evaluate(self, _: &mut Environment) -> Result<Object, Error> {
         let object = match self {
             Literal::Number(number) => Object::Number(number),
             Literal::String(string) => Object::String(string),
