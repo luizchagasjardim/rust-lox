@@ -47,7 +47,7 @@ impl Evaluate for Expression {
             Expression::Assignment { identifier, value } => {
                 let value = value.evaluate(environment)?;
                 environment.assign(identifier, value)
-            },
+            }
             Expression::Grouping(expression) => expression.evaluate(environment),
         }
     }
@@ -104,14 +104,12 @@ mod tests {
 
     #[test]
     fn evaluate_literal() {
+        let mut environment = Environment::new();
+
         let test_values = vec![
             (Literal::Number(123.4), Object::Number(123.4)),
             (
-                Literal::String(
-                    "hello
-            }"
-                    .to_string(),
-                ),
+                Literal::String("hello".to_string()),
                 Object::String("hello".to_string()),
             ),
             (Literal::True, Object::Boolean(true)),
@@ -120,13 +118,15 @@ mod tests {
         ];
 
         for (lit, obj) in test_values {
-            let result = lit.evaluate().unwrap();
+            let result = lit.evaluate(&mut environment).unwrap();
             assert_eq!(result, obj);
         }
     }
 
     #[test]
     fn evaluate_unary() {
+        let mut environment = Environment::new();
+
         let test_values = vec![
             (
                 Expression::Unary {
@@ -152,13 +152,15 @@ mod tests {
         ];
 
         for (input, obj) in test_values {
-            let result = input.evaluate().unwrap();
+            let result = input.evaluate(&mut environment).unwrap();
             assert_eq!(result, obj);
         }
     }
 
     #[test]
     fn evaluate_binary() {
+        let mut environment = Environment::new();
+
         let test_values = vec![
             (
                 Expression::Binary {
@@ -242,7 +244,7 @@ mod tests {
             ),
         ];
         for (input, obj) in test_values {
-            let result = input.evaluate().unwrap();
+            let result = input.evaluate(&mut environment).unwrap();
             assert_eq!(result, obj);
         }
     }

@@ -345,50 +345,62 @@ mod tests {
     #[test]
     fn parse_numbers() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        assert!(matches!(
-            result,
-            Ok(Expression::Literal(Literal::Number(123.0)))
-        ));
+        assert!(result.is_ok());
+        assert_eq!(
+            result.unwrap(),
+            vec![Statement::Expression(Expression::Literal(Literal::Number(
+                123.0
+            )))]
+        );
     }
 
     #[test]
     fn add_numbers() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::Plus, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Plus,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::Addition,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
@@ -396,30 +408,36 @@ mod tests {
     #[test]
     fn subtract_numbers() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::Minus, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Minus,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::Subtraction,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
@@ -427,30 +445,36 @@ mod tests {
     #[test]
     fn multiply_numbers() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::Star, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Star,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::Multiplication,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
@@ -458,248 +482,305 @@ mod tests {
     #[test]
     fn divide_numbers() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::Slash, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Slash,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::Division,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
     #[test]
     fn equality() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EqualEqual, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EqualEqual,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::Equality,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
     #[test]
     fn inequality() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::BangEqual, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::BangEqual,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::Different,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
     #[test]
     fn less_or_equal_than() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::LessEqual, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::LessEqual,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::EqualOrLess,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
     #[test]
     fn less_than() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::Less, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Less,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::Less,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
     #[test]
     fn greater_than() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::Greater, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Greater,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::Greater,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
     #[test]
     fn greater_or_equal_than() {
         let tokens = vec![
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::GreaterEqual, 0),
-            Token::new(
-                TokenType::Number {
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::GreaterEqual,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Binary {
+        let expr = vec![Statement::Expression(Expression::Binary {
             left: Box::new(Expression::Literal(Literal::Number(123.0))),
             operator: BinaryOperator::EqualOrGreater,
             right: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
     #[test]
     fn negation() {
         let tokens = vec![
-            Token::new(TokenType::Bang, 0),
-            Token::new(TokenType::True, 0),
-            Token::new(TokenType::EOF, 0),
+            Token {
+                token_type: TokenType::Bang,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::True,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Unary {
+        let expr = vec![Statement::Expression(Expression::Unary {
             operator: UnaryOperator::Negation,
             expression: Box::new(Expression::Literal(Literal::True)),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
     #[test]
     fn minus() {
         let tokens = vec![
-            Token::new(TokenType::Minus, 0),
-            Token::new(
-                TokenType::Number {
+            Token {
+                token_type: TokenType::Minus,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Number {
                     value: 123 as f64,
                     length: 5,
                 },
-                0,
-            ),
-            Token::new(TokenType::EOF, 0),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Unary {
+        let expr = vec![Statement::Expression(Expression::Unary {
             operator: UnaryOperator::Minus,
             expression: Box::new(Expression::Literal(Literal::Number(123.0))),
-        };
+        })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
@@ -707,22 +788,37 @@ mod tests {
     #[test]
     fn match_false() {
         let tokens = vec![
-            Token::new(TokenType::False, 0),
-            Token::new(TokenType::EOF, 0),
+            Token {
+                token_type: TokenType::False,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Literal(Literal::False);
+        let expr = vec![Statement::Expression(Expression::Literal(Literal::False))];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
 
     #[test]
     fn match_nil() {
-        let tokens = vec![Token::new(TokenType::Nil, 0), Token::new(TokenType::EOF, 0)];
+        let tokens = vec![
+            Token {
+                token_type: TokenType::Nil,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
+        ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Literal(Literal::Nil);
+        let expr = vec![Statement::Expression(Expression::Literal(Literal::Nil))];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
@@ -730,12 +826,20 @@ mod tests {
     #[test]
     fn match_string() {
         let tokens = vec![
-            Token::new(TokenType::String("baseado".to_string()), 0),
-            Token::new(TokenType::EOF, 0),
+            Token {
+                token_type: TokenType::String("baseado".to_string()),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Literal(Literal::String("baseado".to_string()));
+        let expr = vec![Statement::Expression(Expression::Literal(Literal::String(
+            "baseado".to_string(),
+        )))];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
@@ -743,14 +847,28 @@ mod tests {
     #[test]
     fn match_paren() {
         let tokens = vec![
-            Token::new(TokenType::LeftParen, 0),
-            Token::new(TokenType::String("baseado".to_string()), 0),
-            Token::new(TokenType::RightParen, 0),
-            Token::new(TokenType::EOF, 0),
+            Token {
+                token_type: TokenType::LeftParen,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::String("baseado".to_string()),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::RightParen,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Literal(Literal::String("baseado".to_string()));
+        let expr = vec![Statement::Expression(Expression::Literal(Literal::String(
+            "baseado".to_string(),
+        )))];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
     }
@@ -758,19 +876,44 @@ mod tests {
     #[test]
     fn unmatch_paren() {
         let tokens = vec![
-            Token::new(TokenType::LeftParen, 0),
-            Token::new(TokenType::String("baseado".to_string()), 0),
-            Token::new(TokenType::EOF, 0),
+            Token {
+                token_type: TokenType::LeftParen,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::String("baseado".to_string()),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
         ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
-        let expr = Expression::Literal(Literal::String("baseado".to_string()));
         assert!(result.is_err());
     }
 
     #[test]
     fn expected_expression() {
-        let tokens = vec![Token::new(TokenType::EOF, 0)];
+        let tokens = vec![
+            Token {
+                token_type: TokenType::Var,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Identifier("i".to_string()),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Equal,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::EOF,
+                start: 0,
+            },
+        ];
         let parser = Parser::new(tokens);
         let result = parser.parse();
         assert!(result.is_err());

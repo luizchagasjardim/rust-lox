@@ -1,5 +1,6 @@
 use crate::expression::Expression;
 
+#[derive(PartialEq, Debug)]
 pub enum Statement {
     Expression(Expression),
     Print(Expression),
