@@ -353,6 +353,10 @@ mod tests {
                 start: 0,
             },
             Token {
+                token_type: TokenType::Semicolon,
+                start: 0,
+            },
+            Token {
                 token_type: TokenType::EOF,
                 start: 0,
             },
@@ -387,6 +391,10 @@ mod tests {
                     value: 123 as f64,
                     length: 5,
                 },
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Semicolon,
                 start: 0,
             },
             Token {
@@ -427,6 +435,10 @@ mod tests {
                 start: 0,
             },
             Token {
+                token_type: TokenType::Semicolon,
+                start: 0,
+            },
+            Token {
                 token_type: TokenType::EOF,
                 start: 0,
             },
@@ -461,6 +473,10 @@ mod tests {
                     value: 123 as f64,
                     length: 5,
                 },
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Semicolon,
                 start: 0,
             },
             Token {
@@ -501,6 +517,10 @@ mod tests {
                 start: 0,
             },
             Token {
+                token_type: TokenType::Semicolon,
+                start: 0,
+            },
+            Token {
                 token_type: TokenType::EOF,
                 start: 0,
             },
@@ -534,6 +554,10 @@ mod tests {
                     value: 123 as f64,
                     length: 5,
                 },
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Semicolon,
                 start: 0,
             },
             Token {
@@ -573,6 +597,10 @@ mod tests {
                 start: 0,
             },
             Token {
+                token_type: TokenType::Semicolon,
+                start: 0,
+            },
+            Token {
                 token_type: TokenType::EOF,
                 start: 0,
             },
@@ -606,6 +634,10 @@ mod tests {
                     value: 123 as f64,
                     length: 5,
                 },
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Semicolon,
                 start: 0,
             },
             Token {
@@ -645,6 +677,10 @@ mod tests {
                 start: 0,
             },
             Token {
+                token_type: TokenType::Semicolon,
+                start: 0,
+            },
+            Token {
                 token_type: TokenType::EOF,
                 start: 0,
             },
@@ -678,6 +714,10 @@ mod tests {
                     value: 123 as f64,
                     length: 5,
                 },
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Semicolon,
                 start: 0,
             },
             Token {
@@ -717,6 +757,10 @@ mod tests {
                 start: 0,
             },
             Token {
+                token_type: TokenType::Semicolon,
+                start: 0,
+            },
+            Token {
                 token_type: TokenType::EOF,
                 start: 0,
             },
@@ -740,6 +784,10 @@ mod tests {
             },
             Token {
                 token_type: TokenType::True,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Semicolon,
                 start: 0,
             },
             Token {
@@ -771,6 +819,10 @@ mod tests {
                 start: 0,
             },
             Token {
+                token_type: TokenType::Semicolon,
+                start: 0,
+            },
+            Token {
                 token_type: TokenType::EOF,
                 start: 0,
             },
@@ -793,6 +845,10 @@ mod tests {
                 start: 0,
             },
             Token {
+                token_type: TokenType::Semicolon,
+                start: 0,
+            },
+            Token {
                 token_type: TokenType::EOF,
                 start: 0,
             },
@@ -812,6 +868,10 @@ mod tests {
                 start: 0,
             },
             Token {
+                token_type: TokenType::Semicolon,
+                start: 0,
+            },
+            Token {
                 token_type: TokenType::EOF,
                 start: 0,
             },
@@ -828,6 +888,10 @@ mod tests {
         let tokens = vec![
             Token {
                 token_type: TokenType::String("baseado".to_string()),
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Semicolon,
                 start: 0,
             },
             Token {
@@ -857,6 +921,10 @@ mod tests {
             },
             Token {
                 token_type: TokenType::RightParen,
+                start: 0,
+            },
+            Token {
+                token_type: TokenType::Semicolon,
                 start: 0,
             },
             Token {
