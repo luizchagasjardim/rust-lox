@@ -58,15 +58,21 @@ impl EnvironmentInner {
         Ok(value.clone())
     }
 
+    fn variable_was_declared_in_this_scope(&self, name: &String) -> bool {
+        self.values.contains_key(name)
+    }
+
     fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
-        if self.values.contains_key(&*name) {
-            if let Some(val) = self.values.insert(name.clone(), value.clone()) {
-                return Ok(val);
-            }
+        if self.variable_was_declared_in_this_scope(&name) {
+            let Some(val) = self.values.insert(name, value) else {
+                unreachable!("We already checked that the key is in the map")
+            };
+            Ok(val)
+        } else {
+            let Some(enclosing) = &mut self.enclosing else {
+                return Err(Error::UndefinedVariable);
+            };
+            enclosing.assign(name, value)
         }
-        if let Some(enclosing) = &mut self.enclosing {
-            return enclosing.assign(name, value);
-        }
-        Err(Error::UndefinedVariable)
     }
 }
