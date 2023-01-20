@@ -89,9 +89,9 @@ impl Parser {
     fn expression_statement(&mut self) -> Result<Statement, Error> {
         let value = self.expression();
         if self.match_token(TokenType::Semicolon) {
-            Err(Error::ExpectedEndOfExpression)
-        } else {
             Ok(Statement::Expression(value?))
+        } else {
+            Err(Error::ExpectedEndOfExpression)
         }
     }
 

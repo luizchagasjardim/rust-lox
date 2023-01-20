@@ -61,11 +61,11 @@ impl EnvironmentInner {
     fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
         if self.values.contains_key(&*name) {
             if let Some(val) = self.values.insert(name.clone(), value.clone()) {
-                if let Some(enclosing) = &mut self.enclosing {
-                    return enclosing.assign(name, value);
-                }
                 return Ok(val);
-            };
+            }
+        }
+        if let Some(enclosing) = &mut self.enclosing {
+            return enclosing.assign(name, value);
         }
         Err(Error::UndefinedVariable)
     }
