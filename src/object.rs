@@ -105,6 +105,7 @@ pub enum Error {
     ExpectedNumber { actual: Object },
     ExpectedString { actual: Object },
     ExpectedNumberOrString { actual: Object },
+    UndefinedVariable,
     DivisionByZero,
 }
 
@@ -120,6 +121,7 @@ impl Display for Error {
             Error::ExpectedNumberOrString { actual } => {
                 write!(formatter, "Expected number or string, found {}.", actual)
             }
+            Error::UndefinedVariable => write!(formatter, "UndefinedVariable."),
             Error::DivisionByZero => write!(formatter, "Division by zero."),
         }
     }

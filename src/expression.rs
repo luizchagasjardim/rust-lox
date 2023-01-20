@@ -12,6 +12,10 @@ pub enum Expression {
     },
     Variable(String),
     Grouping(Box<Expression>),
+    Assignment {
+        identifier: String,
+        value: Box<Expression>,
+    },
 }
 
 #[derive(PartialEq, Debug)]
@@ -61,7 +65,10 @@ impl Expression {
                 operator.to_code(),
                 right.to_code()
             ),
-            Expression::Variable(string) => todo!(),
+            Expression::Variable(string) => format!("var {} ", string),
+            Expression::Assignment { identifier, value } => {
+                format!("{} = {}", identifier, value.to_code())
+            }
             Expression::Grouping(expression) => format!("({})", expression.to_code()),
         }
     }
