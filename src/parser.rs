@@ -71,12 +71,10 @@ impl Parser {
         if !self.match_token(TokenType::LeftParen) {
             return Err(Error::ExpectedLeftParen);
         }
-        self.advance();
         let condition = self.expression()?;
         if !self.match_token(TokenType::RightParen) {
             return Err(Error::ExpectedRightParen);
         }
-        self.advance();
         let then_statement = self.statement()?;
         let then_statement = Box::new(then_statement);
         let else_statement = if self.match_token(TokenType::Else) {

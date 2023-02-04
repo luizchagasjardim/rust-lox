@@ -69,8 +69,15 @@ impl Evaluate for Literal {
 impl Evaluate for Statement {
     fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
         let statement = match self {
-            Statement::If {..} => {
-                todo!()
+            Statement::If { condition, then_statement, else_statement } => {
+                if condition.evaluate(environment)?.is_truthy() {
+                    then_statement.evaluate(environment)?
+                } else {
+                    match else_statement {
+                        None => Object::Nil,
+                        Some(statement) => statement.evaluate(environment)?,
+                    }
+                }
             }
             Statement::Print(expression) => {
                 println!("{}", expression.evaluate(environment)?);
