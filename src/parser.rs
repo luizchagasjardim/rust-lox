@@ -56,13 +56,19 @@ impl Parser {
     }
 
     fn statement(&mut self) -> Result<Statement, Error> {
-        if self.match_token(TokenType::Print) {
+        if self.match_token(TokenType::If) {
+            self.if_statement()
+        } else if self.match_token(TokenType::Print) {
             self.print_statement()
         } else if self.match_token(TokenType::LeftBrace) {
             self.block()
         } else {
             self.expression_statement()
         }
+    }
+
+    fn if_statement(&mut self) -> Result<Statement, Error> {
+        todo!()
     }
 
     fn block(&mut self) -> Result<Statement, Error> {
