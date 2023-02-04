@@ -69,6 +69,9 @@ impl Evaluate for Literal {
 impl Evaluate for Statement {
     fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
         let statement = match self {
+            Statement::If {..} => {
+                todo!()
+            }
             Statement::Print(expression) => {
                 println!("{}", expression.evaluate(environment)?);
                 Object::Nil
