@@ -68,7 +68,27 @@ impl Parser {
     }
 
     fn if_statement(&mut self) -> Result<Statement, Error> {
-        todo!()
+        if !self.match_token(TokenType::LeftParen) {
+            return Err(Error::ExpectedLeftParen);
+        }
+        self.advance();
+        let condition = self.expression()?;
+        if !self.match_token(TokenType::RightParen) {
+            return Err(Error::ExpectedRightParen);
+        }
+        self.advance();
+        let then_statement = self.statement()?;
+        let then_statement = Box::new(then_statement);
+        let else_statement = if self.match_token(TokenType::Else) {
+            Some(Box::new(self.statement()?))
+        } else {
+            None
+        };
+        Ok(Statement::If {
+            condition,
+            then_statement,
+            else_statement,
+        })
     }
 
     fn block(&mut self) -> Result<Statement, Error> {

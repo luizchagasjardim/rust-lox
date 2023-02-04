@@ -6,7 +6,7 @@ pub enum Statement {
     If {
         condition: Expression,
         then_statement: Box<Statement>,
-        else_statement: Box<Statement>,
+        else_statement: Option<Box<Statement>>,
     },
     Print(Expression),
     VariableDeclaration {
