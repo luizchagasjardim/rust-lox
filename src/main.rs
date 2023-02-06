@@ -1,3 +1,4 @@
+#![feature(assert_matches)]
 extern crate exitcode;
 
 use clap::Parser as ClapParser;

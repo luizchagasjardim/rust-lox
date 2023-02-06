@@ -76,3 +76,56 @@ impl EnvironmentInner {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::assert_matches::assert_matches;
+    #[test]
+    fn environment_define() {
+        let mut env = Environment::new();
+        env.define("x".to_string(), Object::Number(20.0));
+        let result = env.get(&"x".to_string());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Object::Number(20.0));
+    }
+
+    #[test]
+    fn environment_get() {
+        let mut env = Environment::new();
+        env.define("x".to_string(), Object::Number(20.0));
+        let result = env.get(&"x".to_string());
+        let result_err = env.get(&"e".to_string());
+        assert!(result.is_ok());
+        assert!(result_err.is_err());
+        assert_eq!(result.unwrap(), Object::Number(20.0));
+        assert_matches!(result_err.unwrap_err(), Error::UndefinedVariable);
+    }
+
+    #[test]
+    fn environment_assign() {
+        let mut env = Environment::new();
+        env.define("x".to_string(), Object::Number(20.0));
+
+        let result = env.assign("x".to_string(), Object::Number(30.0));
+        let result_err = env.assign("e".to_string(), Object::Number(20.0));
+        assert!(result.is_ok());
+        assert!(result_err.is_err());
+        assert_eq!(result.unwrap(), Object::Number(20.0));
+        assert_matches!(result_err.unwrap_err(), Error::UndefinedVariable);
+    }
+
+    #[test]
+    fn environment_jested() {
+        let mut env = Environment::new();
+        env.define("x".to_string(), Object::Number(20.0));
+        let mut env_nested = env.new_child();
+        env_nested.define("y".to_string(), Object::Number(10.0));
+        let result = env.get(&"x".to_string());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Object::Number(20.0));
+        let result = env_nested.get(&"y".to_string());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Object::Number(10.0));
+    }
+}
