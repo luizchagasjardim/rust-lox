@@ -144,7 +144,7 @@ impl Parser {
         let mut expr = self.and()?;
         while self.match_token(TokenType::Or) {
             let right = self.and()?;
-            expr = Expression::Logical {
+            expr = Expression::Binary {
                 left: Box::new(expr),
                 operator: BinaryOperator::Or,
                 right: Box::new(right),
@@ -157,7 +157,7 @@ impl Parser {
         let mut expr = self.equality()?;
         while self.match_token(TokenType::And) {
             let right = self.equality()?;
-            expr = Expression::Logical {
+            expr = Expression::Binary {
                 left: Box::new(expr),
                 operator: BinaryOperator::And,
                 right: Box::new(right),

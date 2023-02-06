@@ -11,11 +11,6 @@ impl Evaluate for Expression {
     fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
         match self {
             Expression::Literal(literal) => literal.evaluate(environment),
-            Expression::Logical {
-                left,
-                operator,
-                right,
-            } => todo!(),
             Expression::Unary {
                 operator,
                 expression,
