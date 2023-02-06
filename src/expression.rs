@@ -1,6 +1,11 @@
 #[derive(PartialEq, Debug)]
 pub enum Expression {
     Literal(Literal),
+    Logical {
+        left: Box<Expression>,
+        operator: BinaryOperator,
+        right: Box<Expression>,
+    },
     Unary {
         operator: UnaryOperator,
         expression: Box<Expression>,
@@ -51,6 +56,16 @@ impl Expression {
     pub fn to_code(&self) -> String {
         match self {
             Expression::Literal(literal) => literal.to_code(),
+            Expression::Logical {
+                left,
+                operator,
+                right,
+            } => format!(
+                "{} {} {}",
+                left.to_code(),
+                operator.to_code(),
+                right.to_code()
+            ),
             Expression::Unary {
                 operator,
                 expression,

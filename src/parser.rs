@@ -124,7 +124,7 @@ impl Parser {
     }
 
     fn assignment(&mut self) -> Result<Expression, Error> {
-        let expr = self.equality()?;
+        let expr = self.or()?;
 
         if self.match_token(TokenType::Equal) {
             let value = self.assignment()?;
@@ -138,6 +138,14 @@ impl Parser {
             };
         }
         Ok(expr)
+    }
+
+    fn or(&mut self) -> Result<Expression, Error> {
+        todo!()
+    }
+
+    fn and(&mut self) -> Result<Expression, Error> {
+        todo!()
     }
 
     fn equality(&mut self) -> Result<Expression, Error> {
