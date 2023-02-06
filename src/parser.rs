@@ -141,11 +141,29 @@ impl Parser {
     }
 
     fn or(&mut self) -> Result<Expression, Error> {
-        todo!()
+        let mut expr = self.and()?;
+        while self.match_token(TokenType::Or) {
+            let right = self.and()?;
+            expr = Expression::Logical {
+                left: Box::new(expr),
+                operator: BinaryOperator::Or,
+                right: Box::new(right),
+            };
+        }
+        Ok(expr)
     }
 
     fn and(&mut self) -> Result<Expression, Error> {
-        todo!()
+        let mut expr = self.equality()?;
+        while self.match_token(TokenType::And) {
+            let right = self.equality()?;
+            expr = Expression::Logical {
+                left: Box::new(expr),
+                operator: BinaryOperator::And,
+                right: Box::new(right),
+            };
+        }
+        Ok(expr)
     }
 
     fn equality(&mut self) -> Result<Expression, Error> {

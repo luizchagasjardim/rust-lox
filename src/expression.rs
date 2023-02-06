@@ -50,6 +50,8 @@ pub enum BinaryOperator {
     Subtraction,
     Multiplication,
     Division,
+    Or,
+    And,
 }
 
 impl Expression {
@@ -123,6 +125,8 @@ impl BinaryOperator {
             BinaryOperator::Subtraction => "-".to_string(),
             BinaryOperator::Multiplication => "*".to_string(),
             BinaryOperator::Division => "/".to_string(),
+            BinaryOperator::Or => "or".to_string(),
+            BinaryOperator::And => "and".to_string(),
         }
     }
 }

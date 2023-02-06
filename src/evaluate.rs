@@ -46,6 +46,8 @@ impl Evaluate for Expression {
                     BinaryOperator::Subtraction => left_value - right_value,
                     BinaryOperator::Multiplication => left_value * right_value,
                     BinaryOperator::Division => left_value / right_value,
+                    BinaryOperator::Or => todo!(),
+                    BinaryOperator::And => todo!(),
                 }
             }
             Expression::Variable(string) => environment.get(&string),
