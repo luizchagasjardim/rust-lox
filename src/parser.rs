@@ -56,7 +56,9 @@ impl Parser {
     }
 
     fn statement(&mut self) -> Result<Statement, Error> {
-        if self.match_token(TokenType::If) {
+        if self.match_token(TokenType::For) {
+            self.for_statement()
+        } else if self.match_token(TokenType::If) {
             self.if_statement()
         } else if self.match_token(TokenType::Print) {
             self.print_statement()
@@ -67,6 +69,61 @@ impl Parser {
         } else {
             self.expression_statement()
         }
+    }
+
+    fn for_statement(&mut self) -> Result<Statement, Error> {
+        if !self.match_token(TokenType::LeftParen) {
+            return Err(Error::ExpectedLeftParen);
+        }
+
+        let initializer = if self.match_token(TokenType::Semicolon) {
+            None
+        } else if self.match_token(TokenType::Var) {
+            Some(self.variable_declaration()?)
+        } else {
+            Some(self.expression_statement()?)
+        };
+
+        let condition = if self.check(TokenType::Semicolon) {
+            Expression::Literal(Literal::True)
+        } else {
+            self.expression()?
+        };
+
+        if !self.match_token(TokenType::Semicolon) {
+            return Err(Error::ExpectedEndOfExpression);
+        }
+
+        let increment = if self.check(TokenType::RightParen) {
+            None
+        } else {
+            Some(self.expression_statement()?)
+        };
+
+        if !self.match_token(TokenType::RightParen) {
+            return Err(Error::ExpectedRightParen);
+        }
+
+        let body = self.statement()?;
+
+        let while_body = if let Some(expression) = increment {
+            Statement::Block(vec![body, expression])
+        } else {
+            body
+        };
+
+        let while_loop = Statement::While {
+            expression: condition,
+            statement: Box::new(while_body),
+        };
+
+        let for_loop = if let Some(statement) = initializer {
+            Statement::Block(vec![statement, while_loop])
+        } else {
+            while_loop
+        };
+
+        Ok(for_loop)
     }
 
     fn if_statement(&mut self) -> Result<Statement, Error> {
