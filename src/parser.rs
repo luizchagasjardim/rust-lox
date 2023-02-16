@@ -97,7 +97,7 @@ impl Parser {
         let increment = if self.check(TokenType::RightParen) {
             None
         } else {
-            Some(self.expression_statement()?)
+            Some(self.expression()?)
         };
 
         if !self.match_token(TokenType::RightParen) {
@@ -107,7 +107,7 @@ impl Parser {
         let body = self.statement()?;
 
         let while_body = if let Some(expression) = increment {
-            Statement::Block(vec![body, expression])
+            Statement::Block(vec![body, Statement::Expression(expression)])
         } else {
             body
         };
