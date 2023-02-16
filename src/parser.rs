@@ -56,13 +56,96 @@ impl Parser {
     }
 
     fn statement(&mut self) -> Result<Statement, Error> {
-        if self.match_token(TokenType::Print) {
+        if self.match_token(TokenType::For) {
+            self.for_statement()
+        } else if self.match_token(TokenType::If) {
+            self.if_statement()
+        } else if self.match_token(TokenType::Print) {
             self.print_statement()
+        } else if self.match_token(TokenType::While) {
+            self.while_statement()
         } else if self.match_token(TokenType::LeftBrace) {
             self.block()
         } else {
             self.expression_statement()
         }
+    }
+
+    fn for_statement(&mut self) -> Result<Statement, Error> {
+        if !self.match_token(TokenType::LeftParen) {
+            return Err(Error::ExpectedLeftParen);
+        }
+
+        let initializer = if self.match_token(TokenType::Semicolon) {
+            None
+        } else if self.match_token(TokenType::Var) {
+            Some(self.variable_declaration()?)
+        } else {
+            Some(self.expression_statement()?)
+        };
+
+        let condition = if self.check(TokenType::Semicolon) {
+            Expression::Literal(Literal::True)
+        } else {
+            self.expression()?
+        };
+
+        if !self.match_token(TokenType::Semicolon) {
+            return Err(Error::ExpectedEndOfExpression);
+        }
+
+        let increment = if self.check(TokenType::RightParen) {
+            None
+        } else {
+            Some(self.expression()?)
+        };
+
+        if !self.match_token(TokenType::RightParen) {
+            return Err(Error::ExpectedRightParen);
+        }
+
+        let body = self.statement()?;
+
+        let while_body = if let Some(expression) = increment {
+            Statement::Block(vec![body, Statement::Expression(expression)])
+        } else {
+            body
+        };
+
+        let while_loop = Statement::While {
+            expression: condition,
+            statement: Box::new(while_body),
+        };
+
+        let for_loop = if let Some(statement) = initializer {
+            Statement::Block(vec![statement, while_loop])
+        } else {
+            while_loop
+        };
+
+        Ok(for_loop)
+    }
+
+    fn if_statement(&mut self) -> Result<Statement, Error> {
+        if !self.match_token(TokenType::LeftParen) {
+            return Err(Error::ExpectedLeftParen);
+        }
+        let condition = self.expression()?;
+        if !self.match_token(TokenType::RightParen) {
+            return Err(Error::ExpectedRightParen);
+        }
+        let then_statement = self.statement()?;
+        let then_statement = Box::new(then_statement);
+        let else_statement = if self.match_token(TokenType::Else) {
+            Some(Box::new(self.statement()?))
+        } else {
+            None
+        };
+        Ok(Statement::If {
+            condition,
+            then_statement,
+            else_statement,
+        })
     }
 
     fn block(&mut self) -> Result<Statement, Error> {
@@ -86,6 +169,21 @@ impl Parser {
         }
     }
 
+    fn while_statement(&mut self) -> Result<Statement, Error> {
+        if !self.match_token(TokenType::LeftParen) {
+            return Err(Error::ExpectedLeftParen);
+        }
+        let expression = self.expression()?;
+        if !self.match_token(TokenType::RightParen) {
+            return Err(Error::ExpectedRightParen);
+        }
+        let statement = Box::new(self.statement()?);
+        Ok(Statement::While {
+            expression,
+            statement,
+        })
+    }
+
     fn expression_statement(&mut self) -> Result<Statement, Error> {
         let value = self.expression();
         if self.match_token(TokenType::Semicolon) {
@@ -100,7 +198,7 @@ impl Parser {
     }
 
     fn assignment(&mut self) -> Result<Expression, Error> {
-        let expr = self.equality()?;
+        let expr = self.or()?;
 
         if self.match_token(TokenType::Equal) {
             let value = self.assignment()?;
@@ -111,6 +209,32 @@ impl Parser {
                 })
             } else {
                 Err(Error::InvalidAssignmentTarget)
+            };
+        }
+        Ok(expr)
+    }
+
+    fn or(&mut self) -> Result<Expression, Error> {
+        let mut expr = self.and()?;
+        while self.match_token(TokenType::Or) {
+            let right = self.and()?;
+            expr = Expression::Binary {
+                left: Box::new(expr),
+                operator: BinaryOperator::Or,
+                right: Box::new(right),
+            };
+        }
+        Ok(expr)
+    }
+
+    fn and(&mut self) -> Result<Expression, Error> {
+        let mut expr = self.equality()?;
+        while self.match_token(TokenType::And) {
+            let right = self.equality()?;
+            expr = Expression::Binary {
+                left: Box::new(expr),
+                operator: BinaryOperator::And,
+                right: Box::new(right),
             };
         }
         Ok(expr)

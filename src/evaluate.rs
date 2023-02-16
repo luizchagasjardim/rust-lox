@@ -41,6 +41,16 @@ impl Evaluate for Expression {
                     BinaryOperator::Subtraction => left_value - right_value,
                     BinaryOperator::Multiplication => left_value * right_value,
                     BinaryOperator::Division => left_value / right_value,
+                    BinaryOperator::Or => Ok(if left_value.is_truthy() {
+                        left_value
+                    } else {
+                        right_value
+                    }),
+                    BinaryOperator::And => Ok(if left_value.is_truthy() {
+                        right_value
+                    } else {
+                        left_value
+                    }),
                 }
             }
             Expression::Variable(string) => environment.get(&string),
@@ -69,6 +79,20 @@ impl Evaluate for Literal {
 impl Evaluate for Statement {
     fn evaluate(self, environment: &mut Environment) -> Result<Object, Error> {
         let statement = match self {
+            Statement::If {
+                condition,
+                then_statement,
+                else_statement,
+            } => {
+                if condition.evaluate(environment)?.is_truthy() {
+                    then_statement.evaluate(environment)?
+                } else {
+                    match else_statement {
+                        None => Object::Nil,
+                        Some(statement) => statement.evaluate(environment)?,
+                    }
+                }
+            }
             Statement::Print(expression) => {
                 println!("{}", expression.evaluate(environment)?);
                 Object::Nil
@@ -85,6 +109,15 @@ impl Evaluate for Statement {
                 };
                 environment.define(identifier, value.clone());
                 value
+            }
+            Statement::While {
+                expression,
+                statement,
+            } => {
+                while expression.clone().evaluate(environment)?.is_truthy() {
+                    statement.clone().evaluate(environment)?;
+                }
+                Object::Nil
             }
             Statement::Block(statements) => {
                 let mut block_env = environment.new_child();
