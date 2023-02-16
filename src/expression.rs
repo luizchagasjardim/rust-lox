@@ -1,4 +1,4 @@
-#[derive(PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum Expression {
     Literal(Literal),
     Unary {
@@ -18,7 +18,7 @@ pub enum Expression {
     },
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum Literal {
     Number(f64),
     String(String),
@@ -27,13 +27,13 @@ pub enum Literal {
     Nil,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum UnaryOperator {
     Negation,
     Minus,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum BinaryOperator {
     Equality,
     Different,

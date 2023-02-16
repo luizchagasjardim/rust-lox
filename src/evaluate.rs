@@ -110,6 +110,15 @@ impl Evaluate for Statement {
                 environment.define(identifier, value.clone());
                 value
             }
+            Statement::While {
+                expression,
+                statement,
+            } => {
+                while expression.clone().evaluate(environment)?.is_truthy() {
+                    statement.clone().evaluate(environment)?;
+                }
+                Object::Nil
+            }
             Statement::Block(statements) => {
                 let mut block_env = environment.new_child();
                 for statement in statements {

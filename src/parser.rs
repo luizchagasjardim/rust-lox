@@ -60,6 +60,8 @@ impl Parser {
             self.if_statement()
         } else if self.match_token(TokenType::Print) {
             self.print_statement()
+        } else if self.match_token(TokenType::While) {
+            self.while_statement()
         } else if self.match_token(TokenType::LeftBrace) {
             self.block()
         } else {
@@ -108,6 +110,21 @@ impl Parser {
         } else {
             Ok(Statement::Print(value?))
         }
+    }
+
+    fn while_statement(&mut self) -> Result<Statement, Error> {
+        if !self.match_token(TokenType::LeftParen) {
+            return Err(Error::ExpectedLeftParen);
+        }
+        let expression = self.expression()?;
+        if !self.match_token(TokenType::RightParen) {
+            return Err(Error::ExpectedRightParen);
+        }
+        let statement = Box::new(self.statement()?);
+        Ok(Statement::While {
+            expression,
+            statement,
+        })
     }
 
     fn expression_statement(&mut self) -> Result<Statement, Error> {
