@@ -30,8 +30,57 @@ impl Environment {
         expression.evaluate(self)
     }
 
-    pub fn execute(&mut self, expression: Statement) -> Result<Object, Error> {
-        expression.evaluate(self)
+    pub fn execute(&mut self, statement: Statement) -> Result<Object, Error> {
+        let statement = match statement {
+            Statement::If {
+                condition,
+                then_statement,
+                else_statement,
+            } => {
+                if self.evaluate(condition)?.is_truthy() {
+                    self.execute(*then_statement)?
+                } else {
+                    match else_statement {
+                        None => Object::Nil,
+                        Some(statement) => self.execute(*statement)?,
+                    }
+                }
+            }
+            Statement::Print(expression) => {
+                println!("{}", self.evaluate(expression)?);
+                Object::Nil
+            }
+            Statement::Expression(expression) => self.evaluate(expression)?,
+            Statement::VariableDeclaration {
+                identifier,
+                expression,
+            } => {
+                let value = if let Some(expression) = expression {
+                    self.evaluate(expression)?
+                } else {
+                    Object::Nil
+                };
+                self.define(identifier, value.clone());
+                value
+            }
+            Statement::While {
+                expression,
+                statement,
+            } => {
+                while self.evaluate(expression.clone())?.is_truthy() {
+                    self.execute(*statement.clone())?;
+                }
+                Object::Nil
+            }
+            Statement::Block(statements) => {
+                let mut block_env = self.new_child();
+                for statement in statements {
+                    block_env.execute(statement)?;
+                }
+                Object::Nil
+            }
+        };
+        Ok(statement)
     }
 }
 
