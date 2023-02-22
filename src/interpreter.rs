@@ -14,35 +14,36 @@ impl Interpreter {
         }
     }
 
-    pub fn repl(mut self) -> Result<()> {
+    pub fn repl(mut self) -> Result<(), Error> {
         for line_number in 0..usize::MAX {
             let input = Self::read()?;
-            let results = self.eval(&input, line_number);
-            for result in results {
-                match result {
-                    Ok(value) => println!("{}", value),
-                    Err(message) => println!("ERROR: {:?}", message),
+            let result = self.eval(&input, line_number);
+            if let Err(errors) = result {
+                for error in errors {
+                    println!("ERROR: {:?}", error);
                 }
             }
         }
         Err(Error::OutOfLineNumbers)
     }
-    pub fn run_file(mut self, path: String) -> Result<()> {
+    pub fn run_file(mut self, path: String) -> Result<(), Error> {
         use std::fs::File;
         use std::io::{BufRead, BufReader};
 
         let file = File::open(path)?;
         let reader = BufReader::new(file);
         for (line_number, line) in reader.lines().enumerate() {
-            let results = self.eval(&line?, line_number);
-            for result in results {
-                println!("{}", result?);
+            let result = self.eval(&line?, line_number);
+            if let Err(errors) = result {
+                for error in errors {
+                    println!("ERROR in line {}: {:?}", line_number, error);
+                }
             }
         }
         Ok(())
     }
 
-    fn read() -> Result<String> {
+    fn read() -> Result<String, Error> {
         use std::io::{stdin, stdout, Write};
         print!(">");
         stdout().flush().unwrap();
@@ -54,23 +55,31 @@ impl Interpreter {
         Ok(input.into())
     }
 
-    fn eval(&mut self, source: &String, line_number: usize) -> Vec<Result<String>> {
+    fn eval(&mut self, source: &String, line_number: usize) -> Result<(), Vec<Error>> {
         let tokens = match Scanner::new(&source, line_number).scan_tokens() {
             Ok(tokens) => tokens,
-            Err(error) => return vec![Err(error)],
+            Err(error) => return Err(vec![error]),
         };
 
         let statements = match Parser::new(tokens).parse() {
             Ok(statements) => statements,
-            Err(error) => return vec![Err(error)],
+            Err(error) => return Err(vec![error]),
         };
 
-        statements
+        let errors = statements
             .into_iter()
-            .map(|statement| match self.environment.execute(statement) {
-                Ok(object) => Ok(object.to_string()),
-                Err(message) => Err(Error::EvaluationError(message)),
+            .filter_map(|statement| {
+                self.environment
+                    .execute(statement)
+                    .map_err(Error::EvaluationError)
+                    .err()
             })
-            .collect()
+            .collect::<Vec<_>>();
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
+        }
     }
 }
