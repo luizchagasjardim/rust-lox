@@ -4,7 +4,6 @@ extern crate exitcode;
 use clap::Parser as ClapParser;
 
 mod environment;
-mod evaluate;
 mod expression;
 mod interpreter;
 mod object;
