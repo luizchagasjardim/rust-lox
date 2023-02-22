@@ -1,5 +1,4 @@
 use crate::environment::Environment;
-use crate::evaluate::*;
 use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
@@ -68,12 +67,10 @@ impl Interpreter {
 
         statements
             .into_iter()
-            .map(
-                |statement| match statement.evaluate(&mut self.environment) {
-                    Ok(object) => Ok(object.to_string()),
-                    Err(message) => Err(Error::EvaluationError(message)),
-                },
-            )
+            .map(|statement| match self.environment.evaluate(statement) {
+                Ok(object) => Ok(object.to_string()),
+                Err(message) => Err(Error::EvaluationError(message)),
+            })
             .collect()
     }
 }

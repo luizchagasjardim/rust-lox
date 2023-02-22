@@ -1,3 +1,4 @@
+use crate::evaluate::Evaluate;
 use crate::object::{Error, Object};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -21,6 +22,10 @@ impl Environment {
     }
     pub fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
         (*self.0).borrow_mut().assign(name, value)
+    }
+
+    pub fn evaluate(&mut self, expression: impl Evaluate) -> Result<Object, Error> {
+        expression.evaluate(self)
     }
 }
 
