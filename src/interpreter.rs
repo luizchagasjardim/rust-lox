@@ -67,7 +67,7 @@ impl Interpreter {
 
         statements
             .into_iter()
-            .map(|statement| match self.environment.evaluate(statement) {
+            .map(|statement| match self.environment.execute(statement) {
                 Ok(object) => Ok(object.to_string()),
                 Err(message) => Err(Error::EvaluationError(message)),
             })
