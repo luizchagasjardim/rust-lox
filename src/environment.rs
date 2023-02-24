@@ -85,6 +85,10 @@ impl Environment {
                 self.assign(identifier, value)
             }
             Expression::Grouping(expression) => self.evaluate(*expression),
+            Expression::FunctionCall {
+                function,
+                arguments,
+            } => todo!(),
         }
     }
 

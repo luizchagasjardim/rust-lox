@@ -19,7 +19,7 @@ pub enum Expression {
     FunctionCall {
         function: Box<Expression>,
         arguments: Box<Vec<Expression>>,
-    }
+    },
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -76,6 +76,18 @@ impl Expression {
                 format!("{} = {}", identifier, value.to_code())
             }
             Expression::Grouping(expression) => format!("({})", expression.to_code()),
+            Expression::FunctionCall {
+                function,
+                arguments,
+            } => format!(
+                "{}({})",
+                function.to_code(),
+                arguments
+                    .iter()
+                    .map(|arg| arg.to_code())
+                    .intersperse(", ".to_string())
+                    .collect::<String>()
+            ),
         }
     }
 }

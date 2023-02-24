@@ -335,7 +335,42 @@ impl Parser {
                 expression: Box::new(expression),
             })
         } else {
-            self.primary()
+            self.call()
+        }
+    }
+
+    fn call(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.primary()?;
+
+        loop {
+            if self.match_token(TokenType::LeftParen) {
+                expression = self.finish_call(expression)?;
+            } else {
+                break;
+            }
+        }
+        Ok(expression)
+    }
+
+    fn finish_call(&mut self, function: Expression) -> Result<Expression, Error> {
+        let mut arguments = Vec::<Expression>::new();
+
+        if !self.check(TokenType::RightParen) {
+            loop {
+                arguments.push(self.expression()?);
+                if !self.match_token(TokenType::Comma) {
+                    break;
+                }
+            }
+        }
+
+        if self.match_token(TokenType::RightParen) {
+            Ok(Expression::FunctionCall {
+                function: Box::new(function),
+                arguments: Box::new(arguments),
+            })
+        } else {
+            Err(Error::ExpectedRightParen)
         }
     }
 
