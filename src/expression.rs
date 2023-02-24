@@ -16,6 +16,10 @@ pub enum Expression {
         identifier: String,
         value: Box<Expression>,
     },
+    FunctionCall {
+        function: Box<Expression>,
+        arguments: Box<Vec<Expression>>,
+    }
 }
 
 #[derive(Clone, PartialEq, Debug)]
