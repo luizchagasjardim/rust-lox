@@ -6,11 +6,16 @@ use crate::token::*;
 pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
+    errors: Vec<Error>,
 }
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Self { tokens, current: 0 }
+        Self {
+            tokens,
+            current: 0,
+            errors: vec![],
+        }
     }
 
     pub fn parse(mut self) -> Result<Vec<Statement>, Error> {
@@ -357,6 +362,9 @@ impl Parser {
 
         if !self.check(TokenType::RightParen) {
             loop {
+                if arguments.len() >= 255 {
+                    self.errors.push(Error::TooManyArguments(arguments.len()));
+                }
                 arguments.push(self.expression()?);
                 if !self.match_token(TokenType::Comma) {
                     break;

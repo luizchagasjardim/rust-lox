@@ -15,6 +15,7 @@ pub enum Error {
     IoError(IoError),
     KeyboardInterrupt,
     OutOfLineNumbers,
+    TooManyArguments(usize),
     UnexpectedCharacter { character: char, position: usize },
     UnexpectedEof,
     UnterminatedNumber { string: String, position: usize },
