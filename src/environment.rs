@@ -1,4 +1,6 @@
-use crate::object::{Error, Object};
+use crate::expression::*;
+use crate::object::*;
+use crate::statement::Statement;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -21,6 +23,119 @@ impl Environment {
     }
     pub fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
         (*self.0).borrow_mut().assign(name, value)
+    }
+
+    pub fn evaluate(&mut self, expression: Expression) -> Result<Object, Error> {
+        match expression {
+            Expression::Literal(literal) => {
+                let object = match literal {
+                    Literal::Number(number) => Object::Number(number),
+                    Literal::String(string) => Object::String(string),
+                    Literal::True => Object::Boolean(true),
+                    Literal::False => Object::Boolean(false),
+                    Literal::Nil => Object::Nil,
+                };
+                Ok(object)
+            }
+            Expression::Unary {
+                operator,
+                expression,
+            } => {
+                let expresssion_value = self.evaluate(*expression)?;
+                match operator {
+                    UnaryOperator::Negation => Ok(Object::Boolean(!expresssion_value.is_truthy())),
+                    UnaryOperator::Minus => expresssion_value.unary_minus(),
+                }
+            }
+            Expression::Binary {
+                left,
+                operator,
+                right,
+            } => {
+                let left_value = self.evaluate(*left)?;
+                let right_value = self.evaluate(*right)?;
+                match operator {
+                    BinaryOperator::Equality => Ok(Object::Boolean(left_value == right_value)),
+                    BinaryOperator::Different => Ok(Object::Boolean(left_value != right_value)),
+                    BinaryOperator::Less => Ok(Object::Boolean(left_value < right_value)),
+                    BinaryOperator::EqualOrLess => Ok(Object::Boolean(left_value <= right_value)),
+                    BinaryOperator::Greater => Ok(Object::Boolean(left_value > right_value)),
+                    BinaryOperator::EqualOrGreater => {
+                        Ok(Object::Boolean(left_value >= right_value))
+                    }
+                    BinaryOperator::Addition => left_value + right_value,
+                    BinaryOperator::Subtraction => left_value - right_value,
+                    BinaryOperator::Multiplication => left_value * right_value,
+                    BinaryOperator::Division => left_value / right_value,
+                    BinaryOperator::Or => Ok(if left_value.is_truthy() {
+                        left_value
+                    } else {
+                        right_value
+                    }),
+                    BinaryOperator::And => Ok(if left_value.is_truthy() {
+                        right_value
+                    } else {
+                        left_value
+                    }),
+                }
+            }
+            Expression::Variable(string) => self.get(&string),
+            Expression::Assignment { identifier, value } => {
+                let value = self.evaluate(*value)?;
+                self.assign(identifier, value)
+            }
+            Expression::Grouping(expression) => self.evaluate(*expression),
+        }
+    }
+
+    pub fn execute(&mut self, statement: Statement) -> Result<(), Error> {
+        match statement {
+            Statement::If {
+                condition,
+                then_statement,
+                else_statement,
+            } => {
+                if self.evaluate(condition)?.is_truthy() {
+                    self.execute(*then_statement)?;
+                } else {
+                    if let Some(statement) = else_statement {
+                        self.execute(*statement)?;
+                    }
+                }
+            }
+            Statement::Print(expression) => {
+                println!("{}", self.evaluate(expression)?);
+            }
+            Statement::Expression(expression) => {
+                self.evaluate(expression)?;
+            }
+            Statement::VariableDeclaration {
+                identifier,
+                expression,
+            } => {
+                let value = if let Some(expression) = expression {
+                    self.evaluate(expression)?
+                } else {
+                    Object::Nil
+                };
+                self.define(identifier, value.clone());
+            }
+            Statement::While {
+                expression,
+                statement,
+            } => {
+                while self.evaluate(expression.clone())?.is_truthy() {
+                    self.execute(*statement.clone())?;
+                }
+            }
+            Statement::Block(statements) => {
+                let mut block_env = self.new_child();
+                for statement in statements {
+                    block_env.execute(statement)?;
+                }
+            }
+        };
+        Ok(())
     }
 }
 

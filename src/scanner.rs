@@ -13,7 +13,7 @@ impl Scanner<'_> {
             chars: source.chars().enumerate().peekable(),
         }
     }
-    pub fn scan_tokens(mut self) -> Result<Vec<Token>> {
+    pub fn scan_tokens(mut self) -> Result<Vec<Token>, Error> {
         let mut tokens = Vec::new();
         while let Some(token) = self.scan_token() {
             tokens.push(token?);
@@ -24,7 +24,7 @@ impl Scanner<'_> {
         });
         Ok(tokens)
     }
-    fn scan_token(&mut self) -> Option<Result<Token>> {
+    fn scan_token(&mut self) -> Option<Result<Token, Error>> {
         let (start, character) = self.chars.next()?;
         let token_type = match character {
             '(' => TokenType::LeftParen,
