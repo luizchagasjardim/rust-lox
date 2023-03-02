@@ -88,8 +88,26 @@ impl Environment {
             Expression::FunctionCall {
                 function,
                 arguments,
-            } => todo!(),
+            } => {
+                let mut function = self.evaluate(*function)?;
+                let mut arguments = arguments
+                    .into_iter()
+                    .map(|arg| self.evaluate(arg))
+                    .collect::<Result<Vec<Object>, Error>>()?;
+                self.call_function(&mut function, &mut arguments)
+            }
         }
+    }
+
+    fn call_function(
+        &mut self,
+        function: &mut Object,
+        arguments: &mut Vec<Object>,
+    ) -> Result<Object, Error> {
+        let Object::Function(function) = function else {
+            todo!();
+        };
+        todo!();
     }
 
     pub fn execute(&mut self, statement: Statement) -> Result<(), Error> {

@@ -18,7 +18,7 @@ pub enum Expression {
     },
     FunctionCall {
         function: Box<Expression>,
-        arguments: Box<Vec<Expression>>,
+        arguments: Vec<Expression>,
     },
 }
 

@@ -375,7 +375,7 @@ impl Parser {
         if self.match_token(TokenType::RightParen) {
             Ok(Expression::FunctionCall {
                 function: Box::new(function),
-                arguments: Box::new(arguments),
+                arguments,
             })
         } else {
             Err(Error::ExpectedRightParen)

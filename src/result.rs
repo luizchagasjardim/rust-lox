@@ -36,6 +36,7 @@ impl Error {
             Error::KeyboardInterrupt => exitcode::OK,
             Error::InvalidAssignmentTarget => exitcode::USAGE,
             Error::OutOfLineNumbers => exitcode::SOFTWARE,
+            Error::TooManyArguments(_) => exitcode::USAGE,
             Error::UnexpectedCharacter { .. } => exitcode::USAGE,
             Error::UnexpectedEof => exitcode::USAGE,
             Error::UnterminatedNumber { .. } => exitcode::USAGE,

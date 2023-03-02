@@ -1,10 +1,14 @@
 use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Debug, PartialEq)]
+pub struct Function; //TODO
+
+#[derive(Clone, Debug, PartialEq)]
 pub enum Object {
     Number(f64),
     String(String),
     Boolean(bool),
+    Function(Function),
     Nil,
 }
 
@@ -24,6 +28,7 @@ impl Object {
             Object::Number(_) => true,
             Object::String(_) => true,
             Object::Boolean(boolean) => *boolean,
+            Object::Function(_) => todo!(),
             Object::Nil => false,
         }
     }
