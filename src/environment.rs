@@ -89,7 +89,10 @@ impl Environment {
                 function,
                 arguments,
             } => {
-                let mut function = self.evaluate(*function)?;
+                let function = self.evaluate(*function)?;
+                let Object::Function(mut function) = function else {
+                    todo!();
+                };
                 let mut arguments = arguments
                     .into_iter()
                     .map(|arg| self.evaluate(arg))
@@ -101,12 +104,9 @@ impl Environment {
 
     fn call_function(
         &mut self,
-        function: &mut Object,
+        function: &mut Function,
         arguments: &mut Vec<Object>,
     ) -> Result<Object, Error> {
-        let Object::Function(function) = function else {
-            todo!();
-        };
         todo!();
     }
 
