@@ -107,6 +107,7 @@ impl std::ops::Div for Object {
 
 #[derive(Debug)]
 pub enum Error {
+    AttemptedToCallUncallableExpression { called: Object },
     ExpectedNumber { actual: Object },
     ExpectedString { actual: Object },
     ExpectedNumberOrString { actual: Object },
@@ -117,6 +118,13 @@ pub enum Error {
 impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Error::AttemptedToCallUncallableExpression { called } => {
+                write!(
+                    formatter,
+                    "Attempted to call uncallable expresion {}.",
+                    called
+                )
+            }
             Error::ExpectedNumber { actual } => {
                 write!(formatter, "Expected number, found {}.", actual)
             }

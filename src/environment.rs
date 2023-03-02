@@ -89,9 +89,9 @@ impl Environment {
                 function,
                 arguments,
             } => {
-                let function = self.evaluate(*function)?;
-                let Object::Function(mut function) = function else {
-                    todo!();
+                let function_object = self.evaluate(*function)?;
+                let Object::Function(mut function) = function_object else {
+                    return Err(Error::AttemptedToCallUncallableExpression{ called: function_object });
                 };
                 let mut arguments = arguments
                     .into_iter()
