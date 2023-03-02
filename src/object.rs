@@ -1,7 +1,9 @@
 use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Function; //TODO
+pub struct Function {
+    pub arity: usize,
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Object {
@@ -113,6 +115,7 @@ pub enum Error {
     ExpectedNumberOrString { actual: Object },
     UndefinedVariable,
     DivisionByZero,
+    WrongNumberOfArguments { expected: usize, actual: usize },
 }
 
 impl Display for Error {
@@ -136,6 +139,9 @@ impl Display for Error {
             }
             Error::UndefinedVariable => write!(formatter, "UndefinedVariable."),
             Error::DivisionByZero => write!(formatter, "Division by zero."),
+            Error::WrongNumberOfArguments { expected, actual } => {
+                write!(formatter, "Wrong number of arguments. Function expects {} arguments, but got called with {} arguments", expected, actual)
+            }
         }
     }
 }

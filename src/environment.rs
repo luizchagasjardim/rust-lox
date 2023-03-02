@@ -93,6 +93,12 @@ impl Environment {
                 let Object::Function(mut function) = function_object else {
                     return Err(Error::AttemptedToCallUncallableExpression{ called: function_object });
                 };
+                if arguments.len() != function.arity {
+                    return Err(Error::WrongNumberOfArguments {
+                        expected: function.arity,
+                        actual: arguments.len(),
+                    });
+                }
                 let mut arguments = arguments
                     .into_iter()
                     .map(|arg| self.evaluate(arg))
