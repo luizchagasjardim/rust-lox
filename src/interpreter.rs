@@ -1,4 +1,5 @@
 use crate::environment::Environment;
+use crate::expression::{BinaryOperator, Expression, Literal, UnaryOperator};
 use crate::object;
 use crate::object::{Function, Object};
 use crate::parser::*;
@@ -110,7 +111,7 @@ impl Interpreter {
                 then_statement,
                 else_statement,
             } => {
-                if self.environment.evaluate(condition)?.is_truthy() {
+                if self.evaluate(condition)?.is_truthy() {
                     self.execute(*then_statement)?;
                 } else {
                     if let Some(statement) = else_statement {
@@ -119,17 +120,17 @@ impl Interpreter {
                 }
             }
             Statement::Print(expression) => {
-                println!("{}", self.environment.evaluate(expression)?);
+                println!("{}", self.evaluate(expression)?);
             }
             Statement::Expression(expression) => {
-                self.environment.evaluate(expression)?;
+                self.evaluate(expression)?;
             }
             Statement::VariableDeclaration {
                 identifier,
                 expression,
             } => {
                 let value = if let Some(expression) = expression {
-                    self.environment.evaluate(expression)?
+                    self.evaluate(expression)?
                 } else {
                     Object::Nil
                 };
@@ -146,7 +147,7 @@ impl Interpreter {
                 expression,
                 statement,
             } => {
-                while self.environment.evaluate(expression.clone())?.is_truthy() {
+                while self.evaluate(expression.clone())?.is_truthy() {
                     self.execute(*statement.clone())?;
                 }
             }
@@ -159,5 +160,96 @@ impl Interpreter {
             }
         };
         Ok(())
+    }
+
+    fn evaluate(&mut self, expression: Expression) -> Result<Object, object::Error> {
+        match expression {
+            Expression::Literal(literal) => {
+                let object = match literal {
+                    Literal::Number(number) => Object::Number(number),
+                    Literal::String(string) => Object::String(string),
+                    Literal::True => Object::Boolean(true),
+                    Literal::False => Object::Boolean(false),
+                    Literal::Nil => Object::Nil,
+                };
+                Ok(object)
+            }
+            Expression::Unary {
+                operator,
+                expression,
+            } => {
+                let expresssion_value = self.evaluate(*expression)?;
+                match operator {
+                    UnaryOperator::Negation => Ok(Object::Boolean(!expresssion_value.is_truthy())),
+                    UnaryOperator::Minus => expresssion_value.unary_minus(),
+                }
+            }
+            Expression::Binary {
+                left,
+                operator,
+                right,
+            } => {
+                let left_value = self.evaluate(*left)?;
+                let right_value = self.evaluate(*right)?;
+                match operator {
+                    BinaryOperator::Equality => Ok(Object::Boolean(left_value == right_value)),
+                    BinaryOperator::Different => Ok(Object::Boolean(left_value != right_value)),
+                    BinaryOperator::Less => Ok(Object::Boolean(left_value < right_value)),
+                    BinaryOperator::EqualOrLess => Ok(Object::Boolean(left_value <= right_value)),
+                    BinaryOperator::Greater => Ok(Object::Boolean(left_value > right_value)),
+                    BinaryOperator::EqualOrGreater => {
+                        Ok(Object::Boolean(left_value >= right_value))
+                    }
+                    BinaryOperator::Addition => left_value + right_value,
+                    BinaryOperator::Subtraction => left_value - right_value,
+                    BinaryOperator::Multiplication => left_value * right_value,
+                    BinaryOperator::Division => left_value / right_value,
+                    BinaryOperator::Or => Ok(if left_value.is_truthy() {
+                        left_value
+                    } else {
+                        right_value
+                    }),
+                    BinaryOperator::And => Ok(if left_value.is_truthy() {
+                        right_value
+                    } else {
+                        left_value
+                    }),
+                }
+            }
+            Expression::Variable(string) => self.environment.get(&string),
+            Expression::Assignment { identifier, value } => {
+                let value = self.evaluate(*value)?;
+                self.environment.assign(identifier, value)
+            }
+            Expression::Grouping(expression) => self.evaluate(*expression),
+            Expression::FunctionCall {
+                function,
+                arguments,
+            } => {
+                let function_object = self.evaluate(*function)?;
+                let Object::Function(mut function) = function_object else {
+                    return Err(object::Error::AttemptedToCallUncallableExpression{ called: function_object });
+                };
+                if arguments.len() != function.arity() {
+                    return Err(object::Error::WrongNumberOfArguments {
+                        expected: function.arity(),
+                        actual: arguments.len(),
+                    });
+                }
+                let mut arguments = arguments
+                    .into_iter()
+                    .map(|arg| self.evaluate(arg))
+                    .collect::<Result<Vec<Object>, object::Error>>()?;
+                self.call_function(function, arguments)
+            }
+        }
+    }
+
+    fn call_function(
+        &mut self,
+        function: Rc<dyn Function>,
+        arguments: Vec<Object>,
+    ) -> Result<Object, object::Error> {
+        todo!();
     }
 }
