@@ -16,7 +16,7 @@ pub enum Statement {
     FunctionDeclaration {
         identifier: String,
         parameters: Vec<String>,
-        body: Vec<Statement>,
+        body: Box<Statement>,
     },
     While {
         expression: Expression,

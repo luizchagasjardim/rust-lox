@@ -6,11 +6,12 @@ use exitcode;
 #[derive(Debug)]
 pub enum Error {
     EvaluationError(ObjectError),
-    ExpectedEndOfBlock,
     ExpectedEndOfExpression,
     ExpectedExpression { position: usize },
     ExpectedIdentifier,
+    ExpectedLeftBrace,
     ExpectedLeftParen,
+    ExpectedRightBrace,
     ExpectedRightParen,
     InvalidAssignmentTarget,
     IoError(IoError),
@@ -28,11 +29,12 @@ impl Error {
     pub fn exit_code(&self) -> i32 {
         match &self {
             Error::EvaluationError(_) => exitcode::USAGE,
-            Error::ExpectedEndOfBlock => exitcode::USAGE,
             Error::ExpectedEndOfExpression => exitcode::USAGE,
             Error::ExpectedExpression { .. } => exitcode::USAGE,
             Error::ExpectedIdentifier => exitcode::USAGE,
+            Error::ExpectedLeftBrace => exitcode::USAGE,
             Error::ExpectedLeftParen => exitcode::USAGE,
+            Error::ExpectedRightBrace => exitcode::USAGE,
             Error::ExpectedRightParen => exitcode::USAGE,
             Error::IoError(_) => exitcode::IOERR,
             Error::KeyboardInterrupt => exitcode::OK,

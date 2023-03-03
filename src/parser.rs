@@ -71,10 +71,15 @@ impl Parser {
                 return Err(Error::ExpectedRightParen);
             }
         }
+
+        if !self.match_token(TokenType::LeftBrace) {
+            return Err(Error::ExpectedLeftBrace);
+        }
+        let body = Box::new(self.block()?);
         Ok(Statement::FunctionDeclaration {
-            identifier: identifier.clone(),
+            identifier,
             parameters,
-            body: vec![],
+            body,
         })
     }
 
@@ -201,7 +206,7 @@ impl Parser {
             self.advance();
             Ok(Statement::Block(statements))
         } else {
-            Err(Error::ExpectedEndOfBlock)
+            Err(Error::ExpectedRightBrace)
         }
     }
     fn print_statement(&mut self) -> Result<Statement, Error> {
