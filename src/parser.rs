@@ -27,7 +27,9 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Result<Statement, Error> {
-        let result = if self.match_token(TokenType::Var) {
+        let result = if self.match_token(TokenType::Fun) {
+            self.function_declaration()
+        } else if self.match_token(TokenType::Var) {
             self.variable_declaration()
         } else {
             self.statement()
@@ -38,13 +40,48 @@ impl Parser {
         result
     }
 
-    fn variable_declaration(&mut self) -> Result<Statement, Error> {
+    fn function_declaration(&mut self) -> Result<Statement, Error> {
         if !self.match_identifier() {
-            return Err(Error::ExpectedEndOfExpression);
+            return Err(Error::ExpectedIdentifier);
         }
         let TokenType::Identifier(identifier) = self.previous() else { unreachable!() };
         let identifier = identifier.clone();
-        // this is equivalent to being null
+        if !self.match_token(TokenType::LeftParen) {
+            return Err(Error::ExpectedLeftParen);
+        }
+
+        let mut parameters = Vec::new();
+        if !self.match_token(TokenType::RightParen) {
+            loop {
+                if parameters.len() >= 255 {
+                    return Err(Error::TooManyArguments(parameters.len()));
+                }
+                if !self.match_identifier() {
+                    return Err(Error::ExpectedIdentifier);
+                }
+                let TokenType::Identifier(parameter) = self.previous() else { unreachable!() };
+                parameters.push(parameter.clone());
+                if !self.match_token(TokenType::Comma) {
+                    break;
+                }
+            }
+            if !self.match_token(TokenType::RightParen) {
+                return Err(Error::ExpectedRightParen);
+            }
+        }
+        Ok(Statement::FunctionDeclaration {
+            identifier: identifier.clone(),
+            parameters,
+            body: vec![],
+        })
+    }
+
+    fn variable_declaration(&mut self) -> Result<Statement, Error> {
+        if !self.match_identifier() {
+            return Err(Error::ExpectedIdentifier);
+        }
+        let TokenType::Identifier(identifier) = self.previous() else { unreachable!() };
+        let identifier = identifier.clone();
         let initializer = if self.match_token(TokenType::Equal) {
             Some(self.expression()?)
         } else {
@@ -55,7 +92,7 @@ impl Parser {
             return Err(Error::ExpectedEndOfExpression);
         }
         Ok(Statement::VariableDeclaration {
-            identifier: identifier.clone(),
+            identifier,
             expression: initializer,
         })
     }

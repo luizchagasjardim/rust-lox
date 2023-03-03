@@ -13,6 +13,11 @@ pub enum Statement {
         identifier: String,
         expression: Option<Expression>,
     },
+    FunctionDeclaration {
+        identifier: String,
+        parameters: Vec<String>,
+        body: Vec<Statement>,
+    },
     While {
         expression: Expression,
         statement: Box<Statement>,

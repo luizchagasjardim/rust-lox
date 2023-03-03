@@ -148,6 +148,13 @@ impl Environment {
                 };
                 self.define(identifier, value.clone());
             }
+            Statement::FunctionDeclaration {
+                identifier,
+                parameters,
+                body,
+            } => {
+                todo!()
+            }
             Statement::While {
                 expression,
                 statement,
