@@ -14,7 +14,7 @@ impl Interpreter {
     pub fn new() -> Interpreter {
         let mut globals = Environment::new();
 
-        #[derive(Clone, Debug, PartialEq)]
+        #[derive(Debug)]
         struct Clock;
         impl Function for Clock {
             fn arity(&self) -> usize {
