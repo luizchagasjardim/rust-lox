@@ -3,6 +3,8 @@ use crate::result::Error;
 use crate::statement::Statement;
 use crate::token::*;
 
+const MAXIMUM_NUMBER_OR_PARAMETERS: usize = 255;
+
 pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
@@ -53,7 +55,7 @@ impl Parser {
         let mut parameters = Vec::new();
         if !self.match_token(TokenType::RightParen) {
             loop {
-                if parameters.len() >= 255 {
+                if parameters.len() >= MAXIMUM_NUMBER_OR_PARAMETERS {
                     return Err(Error::TooManyArguments(parameters.len()));
                 }
                 if !self.match_identifier() {
@@ -399,7 +401,7 @@ impl Parser {
 
         if !self.check(TokenType::RightParen) {
             loop {
-                if arguments.len() >= 255 {
+                if arguments.len() >= MAXIMUM_NUMBER_OR_PARAMETERS {
                     self.errors.push(Error::TooManyArguments(arguments.len()));
                 }
                 arguments.push(self.expression()?);
