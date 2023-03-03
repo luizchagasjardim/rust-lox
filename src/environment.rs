@@ -15,6 +15,9 @@ impl Environment {
     pub fn new_child(&self) -> Environment {
         Environment(Rc::new(RefCell::new(EnvironmentInner::new_child(self))))
     }
+    pub fn end(&mut self) -> Option<Environment> {
+        self.0.borrow_mut().enclosing.clone()
+    }
     pub fn define(&mut self, name: String, value: Object) {
         (*self.0).borrow_mut().define(name, value)
     }
@@ -114,63 +117,6 @@ impl Environment {
         arguments: Vec<Object>,
     ) -> Result<Object, Error> {
         todo!();
-    }
-
-    pub fn execute(&mut self, statement: Statement) -> Result<(), Error> {
-        match statement {
-            Statement::If {
-                condition,
-                then_statement,
-                else_statement,
-            } => {
-                if self.evaluate(condition)?.is_truthy() {
-                    self.execute(*then_statement)?;
-                } else {
-                    if let Some(statement) = else_statement {
-                        self.execute(*statement)?;
-                    }
-                }
-            }
-            Statement::Print(expression) => {
-                println!("{}", self.evaluate(expression)?);
-            }
-            Statement::Expression(expression) => {
-                self.evaluate(expression)?;
-            }
-            Statement::VariableDeclaration {
-                identifier,
-                expression,
-            } => {
-                let value = if let Some(expression) = expression {
-                    self.evaluate(expression)?
-                } else {
-                    Object::Nil
-                };
-                self.define(identifier, value.clone());
-            }
-            Statement::FunctionDeclaration {
-                identifier,
-                parameters,
-                body,
-            } => {
-                todo!()
-            }
-            Statement::While {
-                expression,
-                statement,
-            } => {
-                while self.evaluate(expression.clone())?.is_truthy() {
-                    self.execute(*statement.clone())?;
-                }
-            }
-            Statement::Block(statements) => {
-                let mut block_env = self.new_child();
-                for statement in statements {
-                    block_env.execute(statement)?;
-                }
-            }
-        };
-        Ok(())
     }
 }
 

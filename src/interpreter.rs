@@ -104,6 +104,60 @@ impl Interpreter {
     }
 
     fn execute(&mut self, statement: Statement) -> Result<(), object::Error> {
-        self.environment.execute(statement)
+        match statement {
+            Statement::If {
+                condition,
+                then_statement,
+                else_statement,
+            } => {
+                if self.environment.evaluate(condition)?.is_truthy() {
+                    self.execute(*then_statement)?;
+                } else {
+                    if let Some(statement) = else_statement {
+                        self.execute(*statement)?;
+                    }
+                }
+            }
+            Statement::Print(expression) => {
+                println!("{}", self.environment.evaluate(expression)?);
+            }
+            Statement::Expression(expression) => {
+                self.environment.evaluate(expression)?;
+            }
+            Statement::VariableDeclaration {
+                identifier,
+                expression,
+            } => {
+                let value = if let Some(expression) = expression {
+                    self.environment.evaluate(expression)?
+                } else {
+                    Object::Nil
+                };
+                self.environment.define(identifier, value.clone());
+            }
+            Statement::FunctionDeclaration {
+                identifier,
+                parameters,
+                body,
+            } => {
+                todo!()
+            }
+            Statement::While {
+                expression,
+                statement,
+            } => {
+                while self.environment.evaluate(expression.clone())?.is_truthy() {
+                    self.execute(*statement.clone())?;
+                }
+            }
+            Statement::Block(statements) => {
+                self.environment = self.environment.new_child();
+                for statement in statements {
+                    self.execute(statement)?;
+                }
+                self.environment = self.environment.end().unwrap();
+            }
+        };
+        Ok(())
     }
 }
