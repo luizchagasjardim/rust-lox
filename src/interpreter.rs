@@ -1,8 +1,10 @@
 use crate::environment::Environment;
+use crate::object;
 use crate::object::{Function, Object};
 use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
+use crate::statement::Statement;
 use std::rc::Rc;
 
 pub struct Interpreter {
@@ -88,8 +90,7 @@ impl Interpreter {
         let errors = statements
             .into_iter()
             .filter_map(|statement| {
-                self.environment
-                    .execute(statement)
+                self.execute(statement)
                     .map_err(Error::EvaluationError)
                     .err()
             })
@@ -100,5 +101,9 @@ impl Interpreter {
         } else {
             Err(errors)
         }
+    }
+
+    fn execute(&mut self, statement: Statement) -> Result<(), object::Error> {
+        self.environment.execute(statement)
     }
 }
