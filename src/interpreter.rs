@@ -1,16 +1,35 @@
 use crate::environment::Environment;
+use crate::object::{Function, Object};
 use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
+use std::rc::Rc;
 
 pub struct Interpreter {
+    globals: Environment,
     environment: Environment,
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
+        let mut globals = Environment::new();
+
+        #[derive(Clone, Debug, PartialEq)]
+        struct Clock;
+        impl Function for Clock {
+            fn arity(&self) -> usize {
+                0
+            }
+            fn call(&mut self, interpreter: &Interpreter, arguments: Vec<Object>) -> Object {
+                todo!()
+            }
+        }
+        globals.define("clock".to_string(), Object::Function(Rc::new(Clock {})));
+
+        let environment = globals.clone();
         Interpreter {
-            environment: Environment::new(),
+            globals,
+            environment,
         }
     }
 

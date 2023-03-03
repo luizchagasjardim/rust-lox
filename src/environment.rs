@@ -93,9 +93,9 @@ impl Environment {
                 let Object::Function(mut function) = function_object else {
                     return Err(Error::AttemptedToCallUncallableExpression{ called: function_object });
                 };
-                if arguments.len() != function.arity {
+                if arguments.len() != function.arity() {
                     return Err(Error::WrongNumberOfArguments {
-                        expected: function.arity,
+                        expected: function.arity(),
                         actual: arguments.len(),
                     });
                 }
@@ -103,15 +103,15 @@ impl Environment {
                     .into_iter()
                     .map(|arg| self.evaluate(arg))
                     .collect::<Result<Vec<Object>, Error>>()?;
-                self.call_function(&mut function, &mut arguments)
+                self.call_function(function, arguments)
             }
         }
     }
 
     fn call_function(
         &mut self,
-        function: &mut Function,
-        arguments: &mut Vec<Object>,
+        function: Rc<dyn Function>,
+        arguments: Vec<Object>,
     ) -> Result<Object, Error> {
         todo!();
     }

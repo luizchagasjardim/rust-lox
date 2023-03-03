@@ -1,17 +1,31 @@
-use std::fmt::{Display, Formatter};
+use crate::interpreter::Interpreter;
+use std::fmt::{Debug, Display, Formatter};
+use std::rc::Rc;
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct Function {
-    pub arity: usize,
+pub trait Function: Debug {
+    fn arity(&self) -> usize;
+    fn call(&mut self, interpreter: &Interpreter, arguments: Vec<Object>) -> Object;
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum Object {
     Number(f64),
     String(String),
     Boolean(bool),
-    Function(Function),
+    Function(Rc<dyn Function>),
     Nil,
+}
+
+impl PartialEq for Object {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Object::Number(num), Object::Number(other_num)) => num == other_num,
+            (Object::String(str), Object::String(other_str)) => str == other_str,
+            (Object::Boolean(bool), Object::Boolean(other_bool)) => bool == other_bool,
+            (Object::Nil, Object::Nil) => true,
+            _ => todo!(),
+        }
+    }
 }
 
 impl Display for Object {
