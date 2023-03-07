@@ -1,6 +1,13 @@
 use crate::expression::Expression;
 
 #[derive(Clone, PartialEq, Debug)]
+pub struct FunctionDeclaration {
+    pub identifier: String,
+    pub parameters: Vec<String>,
+    pub body: Box<Statement>,
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub enum Statement {
     Expression(Expression),
     If {
@@ -13,11 +20,7 @@ pub enum Statement {
         identifier: String,
         expression: Option<Expression>,
     },
-    FunctionDeclaration {
-        identifier: String,
-        parameters: Vec<String>,
-        body: Box<Statement>,
-    },
+    FunctionDeclaration(FunctionDeclaration),
     While {
         expression: Expression,
         statement: Box<Statement>,

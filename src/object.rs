@@ -1,10 +1,52 @@
 use crate::interpreter::Interpreter;
+use crate::statement::FunctionDeclaration;
 use std::fmt::{Debug, Display, Formatter};
 use std::rc::Rc;
 
-pub trait Function: Debug {
+pub trait Callable: Debug {
     fn arity(&self) -> usize;
-    fn call(&mut self, interpreter: &Interpreter, arguments: Vec<Object>) -> Object;
+    fn call(
+        &mut self,
+        interpreter: &mut Interpreter,
+        arguments: Vec<Object>,
+    ) -> Result<Object, Error>;
+}
+
+#[derive(Debug)]
+pub struct Function {
+    declaration: FunctionDeclaration,
+}
+
+impl Function {
+    pub fn new(declaration: FunctionDeclaration) -> Function {
+        Function { declaration }
+    }
+}
+
+impl Callable for Function {
+    fn arity(&self) -> usize {
+        self.declaration.parameters.len()
+    }
+
+    fn call(
+        &mut self,
+        interpreter: &mut Interpreter,
+        arguments: Vec<Object>,
+    ) -> Result<Object, Error> {
+        let mut interpreter = interpreter.new_function_environment();
+        for (parameter_name, parameter_value) in self
+            .declaration
+            .parameters
+            .iter()
+            .zip(arguments.into_iter())
+        {
+            interpreter
+                .environment
+                .define(parameter_name.clone(), parameter_value);
+        }
+        interpreter.execute(*self.declaration.body.clone())?;
+        Ok(Object::Nil)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -12,7 +54,7 @@ pub enum Object {
     Number(f64),
     String(String),
     Boolean(bool),
-    Function(Rc<dyn Function>),
+    Function(Rc<dyn Callable>),
     Nil,
 }
 

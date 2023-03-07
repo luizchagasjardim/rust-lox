@@ -1,6 +1,6 @@
 use crate::expression::*;
 use crate::result::Error;
-use crate::statement::Statement;
+use crate::statement::{FunctionDeclaration, Statement};
 use crate::token::*;
 
 const MAXIMUM_NUMBER_OR_PARAMETERS: usize = 255;
@@ -76,11 +76,11 @@ impl Parser {
             return Err(Error::ExpectedLeftBrace);
         }
         let body = Box::new(self.block()?);
-        Ok(Statement::FunctionDeclaration {
+        Ok(Statement::FunctionDeclaration(FunctionDeclaration {
             identifier,
             parameters,
             body,
-        })
+        }))
     }
 
     fn variable_declaration(&mut self) -> Result<Statement, Error> {

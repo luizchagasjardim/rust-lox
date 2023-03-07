@@ -1,16 +1,16 @@
 use crate::environment::Environment;
 use crate::expression::{BinaryOperator, Expression, Literal, UnaryOperator};
 use crate::object;
-use crate::object::{Function, Object};
+use crate::object::{Callable, Object};
 use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
-use crate::statement::Statement;
+use crate::statement::{FunctionDeclaration, Statement};
 use std::rc::Rc;
 
 pub struct Interpreter {
     globals: Environment,
-    environment: Environment,
+    pub environment: Environment,
 }
 
 impl Interpreter {
@@ -19,11 +19,15 @@ impl Interpreter {
 
         #[derive(Debug)]
         struct Clock;
-        impl Function for Clock {
+        impl Callable for Clock {
             fn arity(&self) -> usize {
                 0
             }
-            fn call(&mut self, interpreter: &Interpreter, arguments: Vec<Object>) -> Object {
+            fn call(
+                &mut self,
+                interpreter: &mut Interpreter,
+                arguments: Vec<Object>,
+            ) -> Result<Object, object::Error> {
                 todo!()
             }
         }
@@ -104,7 +108,15 @@ impl Interpreter {
         }
     }
 
-    fn execute(&mut self, statement: Statement) -> Result<(), object::Error> {
+    pub fn new_function_environment(&self) -> Interpreter {
+        let environment = self.globals.new_child();
+        Interpreter {
+            globals: self.globals.clone(),
+            environment,
+        }
+    }
+
+    pub fn execute(&mut self, statement: Statement) -> Result<(), object::Error> {
         match statement {
             Statement::If {
                 condition,
@@ -136,11 +148,11 @@ impl Interpreter {
                 };
                 self.environment.define(identifier, value.clone());
             }
-            Statement::FunctionDeclaration {
+            Statement::FunctionDeclaration(FunctionDeclaration {
                 identifier,
                 parameters,
                 body,
-            } => {
+            }) => {
                 todo!()
             }
             Statement::While {
@@ -247,7 +259,7 @@ impl Interpreter {
 
     fn call_function(
         &mut self,
-        function: Rc<dyn Function>,
+        function: Rc<dyn Callable>,
         arguments: Vec<Object>,
     ) -> Result<Object, object::Error> {
         todo!();
