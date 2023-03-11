@@ -35,7 +35,7 @@ fn main() {
     };
 
     if let Err(error) = program_result {
-        println!("{:?}", error);
+        println!("{error:?}");
         exit(error.exit_code());
     }
 }
