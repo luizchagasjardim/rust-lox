@@ -41,22 +41,22 @@ pub enum TokenType {
     EOF,
 }
 
-pub const AND_KEYWORD: &'static str = "and";
-pub const CLASS_KEYWORD: &'static str = "class";
-pub const ELSE_KEYWORD: &'static str = "else";
-pub const FALSE_KEYWORD: &'static str = "false";
-pub const FUN_KEYWORD: &'static str = "fun";
-pub const FOR_KEYWORD: &'static str = "for";
-pub const IF_KEYWORD: &'static str = "if";
-pub const NIL_KEYWORD: &'static str = "nil";
-pub const OR_KEYWORD: &'static str = "or";
-pub const PRINT_KEYWORD: &'static str = "print";
-pub const RETURN_KEYWORD: &'static str = "return";
-pub const SUPER_KEYWORD: &'static str = "super";
-pub const THIS_KEYWORD: &'static str = "this";
-pub const TRUE_KEYWORD: &'static str = "true";
-pub const VAR_KEYWORD: &'static str = "var";
-pub const WHILE_KEYWORD: &'static str = "while";
+pub const AND_KEYWORD: &str = "and";
+pub const CLASS_KEYWORD: &str = "class";
+pub const ELSE_KEYWORD: &str = "else";
+pub const FALSE_KEYWORD: &str = "false";
+pub const FUN_KEYWORD: &str = "fun";
+pub const FOR_KEYWORD: &str = "for";
+pub const IF_KEYWORD: &str = "if";
+pub const NIL_KEYWORD: &str = "nil";
+pub const OR_KEYWORD: &str = "or";
+pub const PRINT_KEYWORD: &str = "print";
+pub const RETURN_KEYWORD: &str = "return";
+pub const SUPER_KEYWORD: &str = "super";
+pub const THIS_KEYWORD: &str = "this";
+pub const TRUE_KEYWORD: &str = "true";
+pub const VAR_KEYWORD: &str = "var";
+pub const WHILE_KEYWORD: &str = "while";
 
 impl TokenType {
     pub fn length(&self) -> usize {

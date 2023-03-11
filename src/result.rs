@@ -1,8 +1,6 @@
 use crate::object::Error as ObjectError;
 use std::io::Error as IoError;
 
-use exitcode;
-
 #[derive(Debug)]
 pub enum Error {
     EvaluationError(ObjectError),
