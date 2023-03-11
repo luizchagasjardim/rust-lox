@@ -5,11 +5,7 @@ use std::rc::Rc;
 
 pub trait Callable: Debug {
     fn arity(&self) -> usize;
-    fn call(
-        &mut self,
-        interpreter: &mut Interpreter,
-        arguments: Vec<Object>,
-    ) -> Result<Object, Error>;
+    fn call(&self, interpreter: &mut Interpreter, arguments: Vec<Object>) -> Result<Object, Error>;
 }
 
 #[derive(Debug)]
@@ -28,11 +24,7 @@ impl Callable for Function {
         self.declaration.parameters.len()
     }
 
-    fn call(
-        &mut self,
-        interpreter: &mut Interpreter,
-        arguments: Vec<Object>,
-    ) -> Result<Object, Error> {
+    fn call(&self, interpreter: &mut Interpreter, arguments: Vec<Object>) -> Result<Object, Error> {
         let mut interpreter = interpreter.new_function_environment();
         for (parameter_name, parameter_value) in self
             .declaration

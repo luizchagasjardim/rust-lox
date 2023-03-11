@@ -24,7 +24,7 @@ impl Interpreter {
                 0
             }
             fn call(
-                &mut self,
+                &self,
                 interpreter: &mut Interpreter,
                 arguments: Vec<Object>,
             ) -> Result<Object, object::Error> {
@@ -252,16 +252,8 @@ impl Interpreter {
                     .into_iter()
                     .map(|arg| self.evaluate(arg))
                     .collect::<Result<Vec<Object>, object::Error>>()?;
-                self.call_function(function, arguments)
+                function.call(self, arguments)
             }
         }
-    }
-
-    fn call_function(
-        &mut self,
-        function: Rc<dyn Callable>,
-        arguments: Vec<Object>,
-    ) -> Result<Object, object::Error> {
-        todo!();
     }
 }
