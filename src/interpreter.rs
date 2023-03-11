@@ -20,6 +20,9 @@ impl Interpreter {
         #[derive(Debug)]
         struct Clock;
         impl Callable for Clock {
+            fn signature(&self) -> String {
+                "clock".to_string()
+            }
             fn arity(&self) -> usize {
                 0
             }

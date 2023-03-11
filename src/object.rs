@@ -4,6 +4,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::rc::Rc;
 
 pub trait Callable: Debug {
+    fn signature(&self) -> String;
     fn arity(&self) -> usize;
     fn call(&self, interpreter: &mut Interpreter, arguments: Vec<Object>) -> Result<Object, Error>;
 }
@@ -20,6 +21,10 @@ impl Function {
 }
 
 impl Callable for Function {
+    fn signature(&self) -> String {
+        self.declaration.identifier.clone() // TODO: add parameter information
+    }
+
     fn arity(&self) -> usize {
         self.declaration.parameters.len()
     }
@@ -64,7 +69,11 @@ impl PartialEq for Object {
 
 impl Display for Object {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(formatter, "{self:?}")
+        if let Object::Function(function) = self {
+            write!(formatter, "<fn {}>", function.signature())
+        } else {
+            write!(formatter, "{self:?}")
+        }
     }
 }
 
