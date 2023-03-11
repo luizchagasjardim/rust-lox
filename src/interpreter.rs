@@ -1,7 +1,7 @@
 use crate::environment::Environment;
 use crate::expression::{BinaryOperator, Expression, Literal, UnaryOperator};
 use crate::object;
-use crate::object::{Callable, Object};
+use crate::object::{Callable, Function, Object};
 use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
@@ -151,12 +151,10 @@ impl Interpreter {
                 };
                 self.environment.define(identifier, value.clone());
             }
-            Statement::FunctionDeclaration(FunctionDeclaration {
-                identifier,
-                parameters,
-                body,
-            }) => {
-                todo!()
+            Statement::FunctionDeclaration(function_declaration) => {
+                let identifier = function_declaration.identifier.clone();
+                let function = Object::Function(Rc::new(Function::new(function_declaration)));
+                self.environment.define(identifier, function)
             }
             Statement::While {
                 expression,
