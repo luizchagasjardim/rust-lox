@@ -72,7 +72,7 @@ impl PartialEq for Object {
 
 impl Display for Object {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(formatter, "{:?}", self)
+        write!(formatter, "{self:?}")
     }
 }
 
@@ -185,13 +185,13 @@ impl Display for Error {
                 )
             }
             Error::ExpectedNumber { actual } => {
-                write!(formatter, "Expected number, found {}.", actual)
+                write!(formatter, "Expected number, found {actual}.")
             }
             Error::ExpectedString { actual } => {
-                write!(formatter, "Expected string, found {}.", actual)
+                write!(formatter, "Expected string, found {actual}.")
             }
             Error::ExpectedNumberOrString { actual } => {
-                write!(formatter, "Expected number or string, found {}.", actual)
+                write!(formatter, "Expected number or string, found {actual}.")
             }
             Error::UndefinedVariable => write!(formatter, "UndefinedVariable."),
             Error::DivisionByZero => write!(formatter, "Division by zero."),

@@ -71,9 +71,9 @@ impl Expression {
                 operator.to_code(),
                 right.to_code()
             ),
-            Expression::Variable(string) => format!("var {} ", string),
+            Expression::Variable(string) => format!("var {string} "),
             Expression::Assignment { identifier, value } => {
-                format!("{} = {}", identifier, value.to_code())
+                format!("{identifier} = {}", value.to_code())
             }
             Expression::Grouping(expression) => format!("({})", expression.to_code()),
             Expression::FunctionCall {
@@ -96,7 +96,7 @@ impl Literal {
     fn to_code(&self) -> String {
         match self {
             Literal::Number(number) => number.to_string(),
-            Literal::String(string) => format!("\"{}\"", string),
+            Literal::String(string) => format!("\"{string}\""),
             Literal::True => "True".to_string(),
             Literal::False => "False".to_string(),
             Literal::Nil => "Nil".to_string(),

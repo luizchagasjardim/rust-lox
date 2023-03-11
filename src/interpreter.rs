@@ -46,7 +46,7 @@ impl Interpreter {
             let result = self.eval(&input, line_number);
             if let Err(errors) = result {
                 for error in errors {
-                    println!("ERROR: {:?}", error);
+                    println!("ERROR: {error:?}");
                 }
             }
         }
@@ -62,7 +62,7 @@ impl Interpreter {
             let result = self.eval(&line?, line_number);
             if let Err(errors) = result {
                 for error in errors {
-                    println!("ERROR in line {}: {:?}", line_number, error);
+                    println!("ERROR in line {line_number}: {error:?}");
                 }
             }
         }

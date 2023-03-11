@@ -510,7 +510,7 @@ impl Parser {
         if !self.is_at_end() {
             self.current += 1;
         }
-        &self.previous()
+        self.previous()
     }
 
     fn is_at_end(&self) -> bool {

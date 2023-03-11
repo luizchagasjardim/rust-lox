@@ -164,18 +164,14 @@ impl Scanner<'_> {
     fn scan_number(&mut self, first_digit: char) -> std::result::Result<(f64, usize), String> {
         let mut value = String::from(first_digit);
 
-        let integer_part = self
-            .scan_integer()
-            .map_err(|err| format!("{}{}", value, err))?;
+        let integer_part = self.scan_integer().map_err(|err| format!("{value}{err}"))?;
         value += &integer_part;
 
         if let Some((_, character)) = self.chars.peek() {
             if *character == '.' {
                 value.push(*character);
                 self.chars.next();
-                let fractional_part = self
-                    .scan_integer()
-                    .map_err(|err| format!("{}{}", value, err))?;
+                let fractional_part = self.scan_integer().map_err(|err| format!("{value}{err}"))?;
                 if fractional_part.is_empty() {
                     return Err(value);
                 }
