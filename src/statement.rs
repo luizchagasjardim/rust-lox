@@ -1,4 +1,5 @@
 use crate::expression::Expression;
+use crate::token::TokenType;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct FunctionDeclaration {
@@ -16,6 +17,7 @@ pub enum Statement {
         else_statement: Option<Box<Statement>>,
     },
     Print(Expression),
+    Return(Option<Expression>),
     VariableDeclaration {
         identifier: String,
         expression: Option<Expression>,

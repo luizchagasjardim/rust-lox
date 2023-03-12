@@ -1,7 +1,9 @@
 use crate::expression::*;
 use crate::result::Error;
+use crate::result::Error::ExpectedEndOfExpression;
 use crate::statement::{FunctionDeclaration, Statement};
 use crate::token::*;
+use std::thread::current;
 
 const MAXIMUM_NUMBER_OR_PARAMETERS: usize = 255;
 
@@ -111,6 +113,8 @@ impl Parser {
             self.if_statement()
         } else if self.match_token(TokenType::Print) {
             self.print_statement()
+        } else if self.match_token(TokenType::Return) {
+            self.return_statement()
         } else if self.match_token(TokenType::While) {
             self.while_statement()
         } else if self.match_token(TokenType::LeftBrace) {
@@ -216,6 +220,18 @@ impl Parser {
         } else {
             Ok(Statement::Print(value?))
         }
+    }
+
+    fn return_statement(&mut self) -> Result<Statement, Error> {
+        let expression = if self.check(TokenType::Semicolon) {
+            None
+        } else {
+            Some(self.expression()?)
+        };
+        if !self.match_token(TokenType::Semicolon) {
+            return Err(ExpectedEndOfExpression);
+        }
+        Ok(Statement::Return(expression))
     }
 
     fn while_statement(&mut self) -> Result<Statement, Error> {

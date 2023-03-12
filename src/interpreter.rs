@@ -137,6 +137,14 @@ impl Interpreter {
             Statement::Print(expression) => {
                 println!("{}", self.evaluate(expression)?);
             }
+            Statement::Return(expression) => {
+                let value = if let Some(expression) = expression {
+                    self.evaluate(expression)?
+                } else {
+                    Object::Nil
+                };
+                return Err(object::Error::Return(value));
+            }
             Statement::Expression(expression) => {
                 self.evaluate(expression)?;
             }

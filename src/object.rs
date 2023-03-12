@@ -41,7 +41,14 @@ impl Callable for Function {
                 .environment
                 .define(parameter_name.clone(), parameter_value);
         }
-        interpreter.execute(*self.declaration.body.clone())?;
+        let execution_result = interpreter.execute(*self.declaration.body.clone());
+        //crazy stuff, I know
+        if let Err(error) = execution_result {
+            return match error {
+                Error::Return(object) => Ok(object),
+                _ => Err(error),
+            };
+        }
         Ok(Object::Nil)
     }
 }
@@ -173,6 +180,7 @@ pub enum Error {
     UndefinedVariable,
     DivisionByZero,
     WrongNumberOfArguments { expected: usize, actual: usize },
+    Return(Object), //Not an error, just a weird way to return a value
 }
 
 impl Display for Error {
@@ -199,6 +207,7 @@ impl Display for Error {
             Error::WrongNumberOfArguments { expected, actual } => {
                 write!(formatter, "Wrong number of arguments. Function expects {} arguments, but got called with {} arguments", expected, actual)
             }
+            Error::Return(..) => panic!("This should never be called."),
         }
     }
 }
