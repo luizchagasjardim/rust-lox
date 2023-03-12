@@ -106,7 +106,7 @@ impl Object {
             }),
         }
     }
-    pub fn to_string_value(self) -> Result<String, Error> {
+    pub fn string_value(self) -> Result<String, Error> {
         match self {
             Object::String(string) => Ok(string),
             _ => Err(Error::ExpectedString { actual: self }),
@@ -129,7 +129,7 @@ impl std::ops::Add for Object {
     fn add(self, rhs: Self) -> Self::Output {
         match self {
             Object::Number(number) => Ok(Object::Number(number + rhs.to_number_value()?)),
-            Object::String(string) => Ok(Object::String(string + &rhs.to_string_value()?)),
+            Object::String(string) => Ok(Object::String(string + &rhs.string_value()?)),
             _ => Err(Error::ExpectedNumberOrString { actual: self }),
         }
     }
@@ -277,21 +277,21 @@ mod tests {
 
     #[test]
     fn to_string_value_number() {
-        assert!(Object::Number(1.0).to_string_value().is_err())
+        assert!(Object::Number(1.0).string_value().is_err())
     }
     #[test]
     fn to_string_value_string() {
-        assert!(Object::String("a".to_string()).to_string_value().is_ok())
+        assert!(Object::String("a".to_string()).string_value().is_ok())
     }
 
     #[test]
     fn to_string_value_boolean() {
-        assert!(Object::Boolean(true).to_string_value().is_err())
+        assert!(Object::Boolean(true).string_value().is_err())
     }
 
     #[test]
     fn to_string_value_nil() {
-        assert!(Object::Nil.to_string_value().is_err())
+        assert!(Object::Nil.string_value().is_err())
     }
 
     #[test]

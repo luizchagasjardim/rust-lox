@@ -2,14 +2,14 @@ use crate::result::*;
 use crate::token::*;
 
 pub struct Scanner<'a> {
-    line_number: usize,
+    _line_number: usize,
     chars: std::iter::Peekable<std::iter::Enumerate<std::str::Chars<'a>>>,
 }
 
 impl Scanner<'_> {
-    pub fn new(source: &str, line_number: usize) -> Scanner {
+    pub fn new(source: &str, _line_number: usize) -> Scanner {
         Scanner {
-            line_number,
+            _line_number,
             chars: source.chars().enumerate().peekable(),
         }
     }
@@ -151,9 +151,9 @@ impl Scanner<'_> {
         self.chars.next();
         true
     }
-    fn scan_string(&mut self) -> std::result::Result<String, String> {
+    fn scan_string(&mut self) -> Result<String, String> {
         let mut value = String::new();
-        while let Some((_, character)) = self.chars.next() {
+        for (_, character) in self.chars.by_ref() {
             if character == '"' {
                 return Ok(value);
             }

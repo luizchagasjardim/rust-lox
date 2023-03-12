@@ -5,7 +5,7 @@ use crate::object::{Callable, Function, Object};
 use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
-use crate::statement::{FunctionDeclaration, Statement};
+use crate::statement::Statement;
 use std::rc::Rc;
 
 pub struct Interpreter {
@@ -28,8 +28,8 @@ impl Interpreter {
             }
             fn call(
                 &self,
-                interpreter: &mut Interpreter,
-                arguments: Vec<Object>,
+                _interpreter: &mut Interpreter,
+                _arguments: Vec<Object>,
             ) -> Result<Object, object::Error> {
                 todo!()
             }
@@ -84,8 +84,8 @@ impl Interpreter {
         Ok(input.into())
     }
 
-    fn eval(&mut self, source: &String, line_number: usize) -> Result<(), Vec<Error>> {
-        let tokens = match Scanner::new(&source, line_number).scan_tokens() {
+    fn eval(&mut self, source: &str, line_number: usize) -> Result<(), Vec<Error>> {
+        let tokens = match Scanner::new(source, line_number).scan_tokens() {
             Ok(tokens) => tokens,
             Err(error) => return Err(vec![error]),
         };
@@ -128,10 +128,8 @@ impl Interpreter {
             } => {
                 if self.evaluate(condition)?.is_truthy() {
                     self.execute(*then_statement)?;
-                } else {
-                    if let Some(statement) = else_statement {
-                        self.execute(*statement)?;
-                    }
+                } else if let Some(statement) = else_statement {
+                    self.execute(*statement)?;
                 }
             }
             Statement::Print(expression) => {
@@ -157,7 +155,7 @@ impl Interpreter {
                 } else {
                     Object::Nil
                 };
-                self.environment.define(identifier, value.clone());
+                self.environment.define(identifier, value);
             }
             Statement::FunctionDeclaration(function_declaration) => {
                 let identifier = function_declaration.identifier.clone();
@@ -248,7 +246,7 @@ impl Interpreter {
                 arguments,
             } => {
                 let function_object = self.evaluate(*function)?;
-                let Object::Function(mut function) = function_object else {
+                let Object::Function(function) = function_object else {
                     return Err(object::Error::AttemptedToCallUncallableExpression{ called: function_object });
                 };
                 if arguments.len() != function.arity() {
@@ -257,7 +255,7 @@ impl Interpreter {
                         actual: arguments.len(),
                     });
                 }
-                let mut arguments = arguments
+                let arguments = arguments
                     .into_iter()
                     .map(|arg| self.evaluate(arg))
                     .collect::<Result<Vec<Object>, object::Error>>()?;
