@@ -25,15 +25,14 @@ jobs:
           RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
           RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
       - name: gather coverage data
-        id: coverage
+        id: coverage_data
         uses: actions-rs/grcov@v0.1
 
       - name: report coverage for the current commit
         id: measure_coverage
-        if: github.event_name == 'pull_request'
         run: |
           set -eu
-          pr_cov=$(cat ${COV_REPORT_DIR}/coverage/badges/flat.svg | egrep '<title>coverage: ' | cut -d: -f 2 | cut -d% -f 1 | sed 's/ //g')
+          pr_cov=$(cat ${COV_REPORT_DIR}/badges/flat.svg | egrep '<title>coverage: ' | cut -d: -f 2 | cut -d% -f 1 | sed 's/ //g')
           curl -s "https://luizchagasjardim:${GITHUB_TOKEN}@api.github.com/repos/luizchagasjardim/rust-lox/statuses/${COMMIT_SHA}" -d "{\"state\": \"success\",\"target_url\": \"https://github.com/luizchagasjardim/rust-lox/pull/${PULL_NUMBER}/checks?check_run_id=${RUN_ID}\",\"description\": \"${pr_cov}%\",\"context\": \"Measured coverage\"}"
           message="Coverage: ${pr_cov}%"
           echo "::set-output name=cov_pr_message::${message}"
@@ -42,7 +41,7 @@ jobs:
           COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
           RUN_ID: ${{ github.run_id }}
           PULL_NUMBER: ${{ github.event.pull_request.number }}
-          COV_REPORT_DIR: ${{ steps.coverage.outputs.report }}
+          COV_REPORT_DIR: ${{ steps.coverage_data.outputs.report }}
 
       - name: add a comment to the PR mentioning the coverage percentage
         if: github.event_name == 'pull_request'
