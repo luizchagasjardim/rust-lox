@@ -3,7 +3,6 @@ use crate::result::Error;
 use crate::result::Error::ExpectedEndOfExpression;
 use crate::statement::{FunctionDeclaration, Statement};
 use crate::token::*;
-use std::thread::current;
 
 const MAXIMUM_NUMBER_OR_PARAMETERS: usize = 255;
 

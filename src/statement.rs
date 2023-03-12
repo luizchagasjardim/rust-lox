@@ -1,5 +1,4 @@
 use crate::expression::Expression;
-use crate::token::TokenType;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct FunctionDeclaration {
