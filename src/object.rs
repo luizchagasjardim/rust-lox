@@ -1,16 +1,86 @@
-use std::fmt::{Display, Formatter};
+use crate::interpreter::Interpreter;
+use crate::statement::FunctionDeclaration;
+use std::fmt::{Debug, Display, Formatter};
+use std::rc::Rc;
 
-#[derive(Clone, Debug, PartialEq)]
+pub trait Callable: Debug {
+    fn signature(&self) -> String;
+    fn arity(&self) -> usize;
+    fn call(&self, interpreter: &mut Interpreter, arguments: Vec<Object>) -> Result<Object, Error>;
+}
+
+#[derive(Debug)]
+pub struct Function {
+    declaration: FunctionDeclaration,
+}
+
+impl Function {
+    pub fn new(declaration: FunctionDeclaration) -> Function {
+        Function { declaration }
+    }
+}
+
+impl Callable for Function {
+    fn signature(&self) -> String {
+        self.declaration.identifier.clone() // TODO: add parameter information
+    }
+
+    fn arity(&self) -> usize {
+        self.declaration.parameters.len()
+    }
+
+    fn call(&self, interpreter: &mut Interpreter, arguments: Vec<Object>) -> Result<Object, Error> {
+        let mut interpreter = interpreter.new_function_environment();
+        for (parameter_name, parameter_value) in self
+            .declaration
+            .parameters
+            .iter()
+            .zip(arguments.into_iter())
+        {
+            interpreter
+                .environment
+                .define(parameter_name.clone(), parameter_value);
+        }
+        let execution_result = interpreter.execute(*self.declaration.body.clone());
+        //crazy stuff, I know
+        if let Err(error) = execution_result {
+            return match error {
+                Error::Return(object) => Ok(object),
+                _ => Err(error),
+            };
+        }
+        Ok(Object::Nil)
+    }
+}
+
+#[derive(Clone, Debug)]
 pub enum Object {
     Number(f64),
     String(String),
     Boolean(bool),
+    Function(Rc<dyn Callable>),
     Nil,
+}
+
+impl PartialEq for Object {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Object::Number(num), Object::Number(other_num)) => num == other_num,
+            (Object::String(str), Object::String(other_str)) => str == other_str,
+            (Object::Boolean(bool), Object::Boolean(other_bool)) => bool == other_bool,
+            (Object::Nil, Object::Nil) => true,
+            _ => todo!(),
+        }
+    }
 }
 
 impl Display for Object {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(formatter, "{self:?}")
+        if let Object::Function(function) = self {
+            write!(formatter, "<fn {}>", function.signature())
+        } else {
+            write!(formatter, "{self:?}")
+        }
     }
 }
 
@@ -24,6 +94,7 @@ impl Object {
             Object::Number(_) => true,
             Object::String(_) => true,
             Object::Boolean(boolean) => *boolean,
+            Object::Function(_) => todo!(),
             Object::Nil => false,
         }
     }
@@ -102,16 +173,26 @@ impl std::ops::Div for Object {
 
 #[derive(Debug)]
 pub enum Error {
+    AttemptedToCallUncallableExpression { called: Object },
     ExpectedNumber { actual: Object },
     ExpectedString { actual: Object },
     ExpectedNumberOrString { actual: Object },
     UndefinedVariable,
     DivisionByZero,
+    WrongNumberOfArguments { expected: usize, actual: usize },
+    Return(Object), //Not an error, just a weird way to return a value
 }
 
 impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Error::AttemptedToCallUncallableExpression { called } => {
+                write!(
+                    formatter,
+                    "Attempted to call uncallable expresion {}.",
+                    called
+                )
+            }
             Error::ExpectedNumber { actual } => {
                 write!(formatter, "Expected number, found {actual}.")
             }
@@ -123,6 +204,10 @@ impl Display for Error {
             }
             Error::UndefinedVariable => write!(formatter, "UndefinedVariable."),
             Error::DivisionByZero => write!(formatter, "Division by zero."),
+            Error::WrongNumberOfArguments { expected, actual } => {
+                write!(formatter, "Wrong number of arguments. Function expects {} arguments, but got called with {} arguments", expected, actual)
+            }
+            Error::Return(..) => panic!("This should never be called."),
         }
     }
 }

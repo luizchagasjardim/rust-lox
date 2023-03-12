@@ -1,4 +1,5 @@
 #![feature(assert_matches)]
+#![feature(iter_intersperse)]
 extern crate exitcode;
 
 use clap::Parser as ClapParser;

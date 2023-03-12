@@ -1,16 +1,25 @@
 use crate::expression::*;
 use crate::result::Error;
-use crate::statement::Statement;
+use crate::result::Error::ExpectedEndOfExpression;
+use crate::statement::{FunctionDeclaration, Statement};
 use crate::token::*;
+use std::thread::current;
+
+const MAXIMUM_NUMBER_OR_PARAMETERS: usize = 255;
 
 pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
+    errors: Vec<Error>,
 }
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Self { tokens, current: 0 }
+        Self {
+            tokens,
+            current: 0,
+            errors: vec![],
+        }
     }
 
     pub fn parse(mut self) -> Result<Vec<Statement>, Error> {
@@ -22,7 +31,9 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Result<Statement, Error> {
-        let result = if self.match_token(TokenType::Var) {
+        let result = if self.match_token(TokenType::Fun) {
+            self.function_declaration()
+        } else if self.match_token(TokenType::Var) {
             self.variable_declaration()
         } else {
             self.statement()
@@ -33,13 +44,53 @@ impl Parser {
         result
     }
 
-    fn variable_declaration(&mut self) -> Result<Statement, Error> {
+    fn function_declaration(&mut self) -> Result<Statement, Error> {
         if !self.match_identifier() {
-            return Err(Error::ExpectedEndOfExpression);
+            return Err(Error::ExpectedIdentifier);
         }
         let TokenType::Identifier(identifier) = self.previous() else { unreachable!() };
         let identifier = identifier.clone();
-        // this is equivalent to being null
+        if !self.match_token(TokenType::LeftParen) {
+            return Err(Error::ExpectedLeftParen);
+        }
+
+        let mut parameters = Vec::new();
+        if !self.match_token(TokenType::RightParen) {
+            loop {
+                if parameters.len() >= MAXIMUM_NUMBER_OR_PARAMETERS {
+                    return Err(Error::TooManyArguments(parameters.len()));
+                }
+                if !self.match_identifier() {
+                    return Err(Error::ExpectedIdentifier);
+                }
+                let TokenType::Identifier(parameter) = self.previous() else { unreachable!() };
+                parameters.push(parameter.clone());
+                if !self.match_token(TokenType::Comma) {
+                    break;
+                }
+            }
+            if !self.match_token(TokenType::RightParen) {
+                return Err(Error::ExpectedRightParen);
+            }
+        }
+
+        if !self.match_token(TokenType::LeftBrace) {
+            return Err(Error::ExpectedLeftBrace);
+        }
+        let body = Box::new(self.block()?);
+        Ok(Statement::FunctionDeclaration(FunctionDeclaration {
+            identifier,
+            parameters,
+            body,
+        }))
+    }
+
+    fn variable_declaration(&mut self) -> Result<Statement, Error> {
+        if !self.match_identifier() {
+            return Err(Error::ExpectedIdentifier);
+        }
+        let TokenType::Identifier(identifier) = self.previous() else { unreachable!() };
+        let identifier = identifier.clone();
         let initializer = if self.match_token(TokenType::Equal) {
             Some(self.expression()?)
         } else {
@@ -62,6 +113,8 @@ impl Parser {
             self.if_statement()
         } else if self.match_token(TokenType::Print) {
             self.print_statement()
+        } else if self.match_token(TokenType::Return) {
+            self.return_statement()
         } else if self.match_token(TokenType::While) {
             self.while_statement()
         } else if self.match_token(TokenType::LeftBrace) {
@@ -157,7 +210,7 @@ impl Parser {
             self.advance();
             Ok(Statement::Block(statements))
         } else {
-            Err(Error::ExpectedEndOfBlock)
+            Err(Error::ExpectedRightBrace)
         }
     }
     fn print_statement(&mut self) -> Result<Statement, Error> {
@@ -167,6 +220,18 @@ impl Parser {
         } else {
             Ok(Statement::Print(value?))
         }
+    }
+
+    fn return_statement(&mut self) -> Result<Statement, Error> {
+        let expression = if self.check(TokenType::Semicolon) {
+            None
+        } else {
+            Some(self.expression()?)
+        };
+        if !self.match_token(TokenType::Semicolon) {
+            return Err(ExpectedEndOfExpression);
+        }
+        Ok(Statement::Return(expression))
     }
 
     fn while_statement(&mut self) -> Result<Statement, Error> {
@@ -335,7 +400,45 @@ impl Parser {
                 expression: Box::new(expression),
             })
         } else {
-            self.primary()
+            self.call()
+        }
+    }
+
+    fn call(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.primary()?;
+
+        loop {
+            if self.match_token(TokenType::LeftParen) {
+                expression = self.finish_call(expression)?;
+            } else {
+                break;
+            }
+        }
+        Ok(expression)
+    }
+
+    fn finish_call(&mut self, function: Expression) -> Result<Expression, Error> {
+        let mut arguments = Vec::<Expression>::new();
+
+        if !self.check(TokenType::RightParen) {
+            loop {
+                if arguments.len() >= MAXIMUM_NUMBER_OR_PARAMETERS {
+                    self.errors.push(Error::TooManyArguments(arguments.len()));
+                }
+                arguments.push(self.expression()?);
+                if !self.match_token(TokenType::Comma) {
+                    break;
+                }
+            }
+        }
+
+        if self.match_token(TokenType::RightParen) {
+            Ok(Expression::FunctionCall {
+                function: Box::new(function),
+                arguments,
+            })
+        } else {
+            Err(Error::ExpectedRightParen)
         }
     }
 
