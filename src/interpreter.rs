@@ -28,7 +28,7 @@ impl Interpreter {
             }
             fn call(
                 &self,
-                _gloabals: &Environment,
+                _globals: &Environment,
                 _arguments: Vec<Object>,
             ) -> Result<Object, object::Error> {
                 todo!()
