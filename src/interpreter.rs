@@ -259,7 +259,7 @@ impl Interpreter {
         }
     }
 
-    pub fn resolve(&mut self, identifier: &str, depth: usize) {
+    pub fn resolve(&mut self, expression: &Expression, identifier: &str, depth: usize) {
         todo!()
     }
 }

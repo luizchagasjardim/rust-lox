@@ -23,7 +23,7 @@ impl Resolver {
         }
     }
 
-    fn resolve_statement(&mut self, statement: Statement) {
+    fn resolve_statement(&mut self, statement: &Statement) {
         match statement {
             Statement::Expression(_) => todo!(),
             Statement::If { .. } => todo!(),
@@ -33,7 +33,7 @@ impl Resolver {
                 identifier,
                 expression,
             } => {
-                self.declare(identifier.clone());
+                self.declare(identifier);
                 if let Some(initializer) = expression {
                     self.resolve_expression(initializer);
                 }
@@ -51,27 +51,30 @@ impl Resolver {
         }
     }
 
-    fn resolve_expression(&mut self, expression: Expression) -> Result<(), Error> {
+    fn resolve_expression(&mut self, expression: &Expression) -> Result<(), Error> {
         match expression {
             Expression::Literal(_) => todo!(),
             Expression::Unary { .. } => todo!(),
             Expression::Binary { .. } => todo!(),
             Expression::Variable(identifier) => {
-                if self.scopes.get_in_top(&identifier) == Some(&VariableStatus::Declared) {
+                if self.scopes.get_in_top(identifier) == Some(&VariableStatus::Declared) {
                     return Err(todo!());
                 }
-                self.resolve_local(&identifier)
+                self.resolve_local(&identifier, &expression);
             }
             Expression::Grouping(_) => todo!(),
-            Expression::Assignment { .. } => todo!(),
+            Expression::Assignment { identifier, value } => {
+                self.resolve_expression(value);
+                self.resolve_local(identifier, &expression);
+            }
             Expression::FunctionCall { .. } => todo!(),
         }
         Ok(())
     }
 
-    fn resolve_local(&mut self, identifier: &String) {
+    fn resolve_local(&mut self, identifier: &String, expression: &Expression) {
         if let Some(depth) = self.scopes.any_contains(identifier) {
-            self.interpreter.resolve(identifier, depth);
+            self.interpreter.resolve(expression, identifier, depth);
         }
     }
 
@@ -83,11 +86,13 @@ impl Resolver {
         self.scopes.pop();
     }
 
-    fn declare(&mut self, identifier: String) {
-        self.scopes.insert(identifier, VariableStatus::Declared);
+    fn declare(&mut self, identifier: &String) {
+        self.scopes
+            .insert(identifier.clone(), VariableStatus::Declared);
     }
 
-    fn define(&mut self, identifier: String) {
-        self.scopes.insert(identifier, VariableStatus::Defined);
+    fn define(&mut self, identifier: &String) {
+        self.scopes
+            .insert(identifier.clone(), VariableStatus::Defined);
     }
 }
