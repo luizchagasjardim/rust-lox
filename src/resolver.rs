@@ -23,7 +23,7 @@ impl Resolver {
         }
     }
 
-    fn resolve_statement(&mut self, statement: &Statement) {
+    fn resolve_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match statement {
             Statement::Expression(_) => todo!(),
             Statement::If { .. } => todo!(),
@@ -35,7 +35,7 @@ impl Resolver {
             } => {
                 self.declare(identifier);
                 if let Some(initializer) = expression {
-                    self.resolve_expression(initializer);
+                    self.resolve_expression(initializer)?;
                 }
                 self.define(identifier);
             }
@@ -44,11 +44,12 @@ impl Resolver {
             Statement::Block(statements) => {
                 self.begin_scope();
                 for statement in statements {
-                    self.resolve_statement(statement);
+                    self.resolve_statement(statement)?;
                 }
                 self.end_scope();
             }
         }
+        Ok(())
     }
 
     fn resolve_expression(&mut self, expression: &Expression) -> Result<(), Error> {
@@ -60,12 +61,12 @@ impl Resolver {
                 if self.scopes.get_in_top(identifier) == Some(&VariableStatus::Declared) {
                     return Err(todo!());
                 }
-                self.resolve_local(&identifier, &expression);
+                self.resolve_local(&identifier, expression);
             }
             Expression::Grouping(_) => todo!(),
             Expression::Assignment { identifier, value } => {
-                self.resolve_expression(value);
-                self.resolve_local(identifier, &expression);
+                self.resolve_expression(value)?;
+                self.resolve_local(identifier, expression);
             }
             Expression::FunctionCall { .. } => todo!(),
         }
