@@ -7,6 +7,7 @@ use clap::Parser as ClapParser;
 mod environment;
 mod expression;
 mod interpreter;
+mod map_stack;
 mod object;
 mod parser;
 mod resolver;

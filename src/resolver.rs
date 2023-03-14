@@ -1,7 +1,7 @@
 use crate::expression::Expression;
 use crate::interpreter::Interpreter;
+use crate::map_stack::MapStack;
 use crate::statement::Statement;
-use std::collections::HashMap;
 
 enum VariableStatus {
     Declared,
@@ -10,14 +10,14 @@ enum VariableStatus {
 
 struct Resolver {
     interpreter: Interpreter,
-    scopes: Vec<HashMap<String, VariableStatus>>,
+    scopes: MapStack<String, VariableStatus>,
 }
 
 impl Resolver {
     fn new(interpreter: Interpreter) -> Self {
         Resolver {
             interpreter,
-            scopes: Vec::new(),
+            scopes: MapStack::new(),
         }
     }
 
@@ -62,7 +62,7 @@ impl Resolver {
     }
 
     fn begin_scope(&mut self) {
-        self.scopes.push(HashMap::new());
+        self.scopes.push();
     }
 
     fn end_scope(&mut self) {
@@ -70,16 +70,10 @@ impl Resolver {
     }
 
     fn declare(&mut self, identifier: String) {
-        let Some(scope) = self.scopes.last_mut() else {
-            return;
-        };
-        scope.insert(identifier, VariableStatus::Declared);
+        self.scopes.insert(identifier, VariableStatus::Declared);
     }
 
     fn define(&mut self, identifier: String) {
-        let Some(scope) = self.scopes.last_mut() else {
-            return;
-        };
-        scope.insert(identifier, VariableStatus::Defined);
+        self.scopes.insert(identifier, VariableStatus::Defined);
     }
 }
