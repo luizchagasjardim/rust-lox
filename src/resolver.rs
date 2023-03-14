@@ -1,14 +1,19 @@
 use crate::expression::Expression;
 use crate::interpreter::Interpreter;
 use crate::statement::Statement;
+use std::collections::HashMap;
 
 struct Resolver {
     interpreter: Interpreter,
+    scopes: Vec<HashMap<String, bool>>,
 }
 
 impl Resolver {
     fn new(interpreter: Interpreter) -> Self {
-        Resolver { interpreter }
+        Resolver {
+            interpreter,
+            scopes: Vec::new(),
+        }
     }
 
     fn resolve_statement(&mut self, statement: Statement) {
@@ -43,10 +48,10 @@ impl Resolver {
     }
 
     fn begin_scope(&mut self) {
-        todo!();
+        self.scopes.push(HashMap::new());
     }
 
     fn end_scope(&mut self) {
-        todo!();
+        self.scopes.pop();
     }
 }
