@@ -25,8 +25,18 @@ impl Resolver {
 
     fn resolve_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match statement {
-            Statement::Expression(_) => todo!(),
-            Statement::If { .. } => todo!(),
+            Statement::Expression(expression) => self.resolve_expression(expression)?,
+            Statement::If {
+                condition,
+                then_statement,
+                else_statement,
+            } => {
+                self.resolve_expression(condition)?;
+                self.resolve_statement(then_statement)?;
+                if let Some(statement) = else_statement {
+                    self.resolve_statement(statement)?
+                }
+            }
             Statement::Print(_) => todo!(),
             Statement::Return(_) => todo!(),
             Statement::VariableDeclaration {
@@ -46,7 +56,7 @@ impl Resolver {
             }) => {
                 self.declare(identifier); //TODO: this line makes no difference, right?
                 self.define(identifier);
-                self.resolve_function(parameters, body);
+                self.resolve_function(parameters, body)?;
             }
             Statement::While { .. } => todo!(),
             Statement::Block(statements) => {
