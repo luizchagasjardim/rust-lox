@@ -19,4 +19,21 @@ impl<K: Eq + Hash, V> MapStack<K, V> {
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
         self.0.last_mut()?.insert(key, value)
     }
+
+    pub fn get_in_top(&self, key: &K) -> Option<&V> {
+        self.0.last()?.get(key)
+    }
+
+    pub fn get_in_any(&self, key: &K) -> Option<(usize, &V)> {
+        self.0
+            .iter()
+            .rev()
+            .enumerate()
+            .find_map(|(depth, hash_map)| Some((depth, hash_map.get(key)?)))
+    }
+
+    pub fn any_contains(&self, key: &K) -> Option<usize> {
+        let (depth, _) = self.get_in_any(key)?;
+        Some(depth)
+    }
 }
