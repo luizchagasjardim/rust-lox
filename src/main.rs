@@ -9,6 +9,7 @@ mod expression;
 mod interpreter;
 mod object;
 mod parser;
+mod resolver;
 mod result;
 mod scanner;
 mod statement;
