@@ -9,7 +9,7 @@ use crate::statement::Statement;
 use std::rc::Rc;
 
 pub struct Interpreter {
-    globals: Environment,
+    pub globals: Environment,
     pub environment: Environment,
 }
 
@@ -28,7 +28,7 @@ impl Interpreter {
             }
             fn call(
                 &self,
-                _interpreter: &mut Interpreter,
+                _globals: &Environment,
                 _arguments: Vec<Object>,
             ) -> Result<Object, object::Error> {
                 todo!()
@@ -111,14 +111,6 @@ impl Interpreter {
         }
     }
 
-    pub fn new_function_environment(&self) -> Interpreter {
-        let environment = self.globals.new_child();
-        Interpreter {
-            globals: self.globals.clone(),
-            environment,
-        }
-    }
-
     pub fn execute(&mut self, statement: Statement) -> Result<(), object::Error> {
         match statement {
             Statement::If {
@@ -159,7 +151,10 @@ impl Interpreter {
             }
             Statement::FunctionDeclaration(function_declaration) => {
                 let identifier = function_declaration.identifier.clone();
-                let function = Object::Function(Rc::new(Function::new(function_declaration)));
+                let function = Object::Function(Rc::new(Function::new(
+                    function_declaration,
+                    self.environment.clone(),
+                )));
                 self.environment.define(identifier, function)
             }
             Statement::While {
@@ -259,7 +254,7 @@ impl Interpreter {
                     .into_iter()
                     .map(|arg| self.evaluate(arg))
                     .collect::<Result<Vec<Object>, object::Error>>()?;
-                function.call(self, arguments)
+                function.call(&self.globals, arguments)
             }
         }
     }

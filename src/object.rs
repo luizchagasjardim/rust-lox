@@ -1,3 +1,4 @@
+use crate::environment::Environment;
 use crate::interpreter::Interpreter;
 use crate::statement::FunctionDeclaration;
 use std::fmt::{Debug, Display, Formatter};
@@ -6,17 +7,21 @@ use std::rc::Rc;
 pub trait Callable: Debug {
     fn signature(&self) -> String;
     fn arity(&self) -> usize;
-    fn call(&self, interpreter: &mut Interpreter, arguments: Vec<Object>) -> Result<Object, Error>;
+    fn call(&self, globals: &Environment, arguments: Vec<Object>) -> Result<Object, Error>;
 }
 
 #[derive(Debug)]
 pub struct Function {
     declaration: FunctionDeclaration,
+    closure: Environment,
 }
 
 impl Function {
-    pub fn new(declaration: FunctionDeclaration) -> Function {
-        Function { declaration }
+    pub fn new(declaration: FunctionDeclaration, closure: Environment) -> Function {
+        Function {
+            declaration,
+            closure,
+        }
     }
 }
 
@@ -29,8 +34,11 @@ impl Callable for Function {
         self.declaration.parameters.len()
     }
 
-    fn call(&self, interpreter: &mut Interpreter, arguments: Vec<Object>) -> Result<Object, Error> {
-        let mut interpreter = interpreter.new_function_environment();
+    fn call(&self, globals: &Environment, arguments: Vec<Object>) -> Result<Object, Error> {
+        let mut interpreter = Interpreter {
+            globals: globals.clone(),
+            environment: self.closure.new_child(),
+        };
         for (parameter_name, parameter_value) in self
             .declaration
             .parameters
