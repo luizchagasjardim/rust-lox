@@ -20,7 +20,13 @@ impl Resolver {
             Statement::VariableDeclaration { .. } => todo!(),
             Statement::FunctionDeclaration(_) => todo!(),
             Statement::While { .. } => todo!(),
-            Statement::Block(_) => todo!(),
+            Statement::Block(statements) => {
+                self.begin_scope();
+                for statement in statements {
+                    self.resolve_statement(statement);
+                }
+                self.end_scope();
+            }
         }
     }
 
@@ -34,5 +40,13 @@ impl Resolver {
             Expression::Assignment { .. } => todo!(),
             Expression::FunctionCall { .. } => todo!(),
         }
+    }
+
+    fn begin_scope(&mut self) {
+        todo!();
+    }
+
+    fn end_scope(&mut self) {
+        todo!();
     }
 }
