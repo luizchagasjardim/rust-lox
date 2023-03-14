@@ -2,7 +2,7 @@ use crate::expression::Expression;
 use crate::interpreter::Interpreter;
 use crate::map_stack::MapStack;
 use crate::result::Error;
-use crate::statement::Statement;
+use crate::statement::{FunctionDeclaration, Statement};
 
 #[derive(PartialEq)]
 enum VariableStatus {
@@ -39,7 +39,15 @@ impl Resolver {
                 }
                 self.define(identifier);
             }
-            Statement::FunctionDeclaration(_) => todo!(),
+            Statement::FunctionDeclaration(FunctionDeclaration {
+                identifier,
+                parameters,
+                body,
+            }) => {
+                self.declare(identifier); //TODO: this line makes no difference, right?
+                self.define(identifier);
+                self.resolve_function(parameters, body);
+            }
             Statement::While { .. } => todo!(),
             Statement::Block(statements) => {
                 self.begin_scope();
@@ -70,6 +78,21 @@ impl Resolver {
             }
             Expression::FunctionCall { .. } => todo!(),
         }
+        Ok(())
+    }
+
+    fn resolve_function(
+        &mut self,
+        parameters: &Vec<String>,
+        body: &Statement,
+    ) -> Result<(), Error> {
+        self.begin_scope();
+        for parameter in parameters {
+            self.declare(parameter); //TODO: this line makes no difference, right?
+            self.define(parameter);
+        }
+        self.resolve_statement(body)?;
+        self.end_scope();
         Ok(())
     }
 
