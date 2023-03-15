@@ -243,8 +243,15 @@ impl Interpreter {
             }
             Expression::Variable(string) => self.look_up_variable(string),
             Expression::Assignment { identifier, value } => {
-                let value = self.evaluate(*value)?;
-                self.environment.assign(identifier, value)
+                let object = self.evaluate(*value.clone())?;
+                let depth = self.locals.get(&Expression::Assignment {
+                    identifier: identifier.clone(),
+                    value,
+                });
+                match depth {
+                    Some(depth) => self.environment.assign_at(*depth, identifier, object),
+                    None => self.globals.assign(identifier, object),
+                }
             }
             Expression::Grouping(expression) => self.evaluate(*expression),
             Expression::FunctionCall {

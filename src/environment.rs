@@ -36,6 +36,14 @@ impl Environment {
     pub fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
         (*self.0).borrow_mut().assign(name, value)
     }
+    pub fn assign_at(
+        &mut self,
+        depth: usize,
+        name: String,
+        value: Object,
+    ) -> Result<Object, Error> {
+        self.ancestor(depth).ok_or(todo!())?.assign(name, value)
+    }
 }
 
 #[derive(Debug)]
