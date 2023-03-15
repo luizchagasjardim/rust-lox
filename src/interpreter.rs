@@ -241,7 +241,7 @@ impl Interpreter {
                     }),
                 }
             }
-            Expression::Variable(string) => self.environment.get(&string),
+            Expression::Variable(string) => self.look_up_variable(string),
             Expression::Assignment { identifier, value } => {
                 let value = self.evaluate(*value)?;
                 self.environment.assign(identifier, value)
@@ -272,5 +272,15 @@ impl Interpreter {
 
     pub fn resolve(&mut self, expression: Expression, depth: usize) {
         self.locals.insert(expression, depth);
+    }
+
+    fn look_up_variable(&self, variable_name: String) -> Result<Object, object::Error> {
+        let depth = self
+            .locals
+            .get(&Expression::Variable(variable_name.clone()));
+        match depth {
+            Some(depth) => self.environment.get_at(*depth, &variable_name),
+            None => self.globals.get(&variable_name),
+        }
     }
 }

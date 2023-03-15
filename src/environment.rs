@@ -23,6 +23,16 @@ impl Environment {
     pub fn get(&self, name: &String) -> Result<Object, Error> {
         self.0.borrow().get(name)
     }
+    pub fn get_at(&self, depth: usize, name: &String) -> Result<Object, Error> {
+        self.ancestor(depth).ok_or(todo!())?.get(name)
+    }
+    fn ancestor(&self, depth: usize) -> Option<Environment> {
+        let mut environment = Some(self.clone());
+        for _ in 0..depth {
+            environment = environment?.0.borrow().enclosing.clone();
+        }
+        environment
+    }
     pub fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
         (*self.0).borrow_mut().assign(name, value)
     }
