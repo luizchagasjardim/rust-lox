@@ -10,20 +10,20 @@ enum VariableStatus {
     Defined,
 }
 
-struct Resolver {
+pub struct Resolver {
     interpreter: Interpreter,
     scopes: MapStack<String, VariableStatus>,
 }
 
 impl Resolver {
-    fn new(interpreter: Interpreter) -> Self {
+    pub fn new(interpreter: Interpreter) -> Self {
         Resolver {
             interpreter,
             scopes: MapStack::new(),
         }
     }
 
-    fn resolve_statement(&mut self, statement: &Statement) -> Result<(), Error> {
+    pub fn resolve_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match statement {
             Statement::Expression(expression) => self.resolve_expression(expression)?,
             Statement::If {

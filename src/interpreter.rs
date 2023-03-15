@@ -3,12 +3,14 @@ use crate::expression::{BinaryOperator, Expression, Literal, UnaryOperator};
 use crate::object;
 use crate::object::{Callable, Function, Object};
 use crate::parser::*;
+use crate::resolver::Resolver;
 use crate::result::*;
 use crate::scanner::*;
 use crate::statement::Statement;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+#[derive(Clone)]
 pub struct Interpreter {
     globals: Environment,
     pub environment: Environment,
@@ -106,6 +108,16 @@ impl Interpreter {
             Err(error) => return Err(vec![error]),
         };
 
+        let mut resolver = Resolver::new(self.clone());
+        let resolver_errors = statements
+            .iter()
+            .filter_map(|statement| resolver.resolve_statement(statement).err())
+            .collect::<Vec<_>>();
+
+        if !resolver_errors.is_empty() {
+            return Err(resolver_errors);
+        }
+
         let errors = statements
             .into_iter()
             .filter_map(|statement| {
@@ -115,11 +127,11 @@ impl Interpreter {
             })
             .collect::<Vec<_>>();
 
-        if errors.is_empty() {
-            Ok(())
-        } else {
-            Err(errors)
+        if !errors.is_empty() {
+            return Err(errors);
         }
+
+        Ok(())
     }
 
     pub fn execute(&mut self, statement: Statement) -> Result<(), object::Error> {
