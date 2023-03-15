@@ -142,7 +142,7 @@ impl Resolver {
 
     fn resolve_local(&mut self, identifier: &String, expression: &Expression) {
         if let Some(depth) = self.scopes.any_contains(identifier) {
-            self.interpreter.resolve(expression, identifier, depth);
+            self.interpreter.resolve(expression.clone(), depth);
         }
     }
 

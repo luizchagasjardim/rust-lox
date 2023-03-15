@@ -6,11 +6,13 @@ use crate::parser::*;
 use crate::result::*;
 use crate::scanner::*;
 use crate::statement::Statement;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 pub struct Interpreter {
-    pub globals: Environment,
+    globals: Environment,
     pub environment: Environment,
+    locals: HashMap<Expression, usize>,
 }
 
 impl Interpreter {
@@ -28,7 +30,7 @@ impl Interpreter {
             }
             fn call(
                 &self,
-                _globals: &Environment,
+                _interpreter: &Interpreter,
                 _arguments: Vec<Object>,
             ) -> Result<Object, object::Error> {
                 todo!()
@@ -40,6 +42,15 @@ impl Interpreter {
         Interpreter {
             globals,
             environment,
+            locals: HashMap::new(),
+        }
+    }
+
+    pub fn new_for_closure(&self, environment: Environment) -> Interpreter {
+        Interpreter {
+            globals: self.globals.clone(),
+            environment,
+            locals: self.locals.clone(),
         }
     }
 
@@ -254,12 +265,12 @@ impl Interpreter {
                     .into_iter()
                     .map(|arg| self.evaluate(arg))
                     .collect::<Result<Vec<Object>, object::Error>>()?;
-                function.call(&self.globals, arguments)
+                function.call(&self, arguments)
             }
         }
     }
 
-    pub fn resolve(&mut self, expression: &Expression, identifier: &str, depth: usize) {
-        todo!()
+    pub fn resolve(&mut self, expression: Expression, depth: usize) {
+        self.locals.insert(expression, depth);
     }
 }
