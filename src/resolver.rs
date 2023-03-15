@@ -84,21 +84,43 @@ impl Resolver {
 
     fn resolve_expression(&mut self, expression: &Expression) -> Result<(), Error> {
         match expression {
-            Expression::Literal(_) => todo!(),
-            Expression::Unary { .. } => todo!(),
-            Expression::Binary { .. } => todo!(),
+            Expression::Literal(_) => {}
+            Expression::Unary {
+                operator,
+                expression,
+            } => {
+                self.resolve_expression(expression)?;
+            }
+            Expression::Binary {
+                left,
+                operator,
+                right,
+            } => {
+                self.resolve_expression(left)?;
+                self.resolve_expression(right)?;
+            }
             Expression::Variable(identifier) => {
                 if self.scopes.get_in_top(identifier) == Some(&VariableStatus::Declared) {
                     return Err(todo!());
                 }
                 self.resolve_local(&identifier, expression);
             }
-            Expression::Grouping(_) => todo!(),
+            Expression::Grouping(expression) => {
+                self.resolve_expression(expression)?;
+            }
             Expression::Assignment { identifier, value } => {
                 self.resolve_expression(value)?;
                 self.resolve_local(identifier, expression);
             }
-            Expression::FunctionCall { .. } => todo!(),
+            Expression::FunctionCall {
+                function,
+                arguments,
+            } => {
+                self.resolve_expression(function)?;
+                for argument in arguments {
+                    self.resolve_expression(argument)?;
+                }
+            }
         }
         Ok(())
     }
