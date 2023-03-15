@@ -37,8 +37,14 @@ impl Resolver {
                     self.resolve_statement(statement)?
                 }
             }
-            Statement::Print(_) => todo!(),
-            Statement::Return(_) => todo!(),
+            Statement::Print(expression) => {
+                self.resolve_expression(expression)?;
+            }
+            Statement::Return(expression) => {
+                if let Some(expression) = expression {
+                    self.resolve_expression(expression)?
+                }
+            }
             Statement::VariableDeclaration {
                 identifier,
                 expression,
@@ -58,7 +64,13 @@ impl Resolver {
                 self.define(identifier);
                 self.resolve_function(parameters, body)?;
             }
-            Statement::While { .. } => todo!(),
+            Statement::While {
+                expression,
+                statement,
+            } => {
+                self.resolve_expression(expression)?;
+                self.resolve_statement(statement)?;
+            }
             Statement::Block(statements) => {
                 self.begin_scope();
                 for statement in statements {
