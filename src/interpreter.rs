@@ -258,4 +258,8 @@ impl Interpreter {
             }
         }
     }
+
+    pub fn resolve(&mut self, expression: &Expression, identifier: &str, depth: usize) {
+        todo!()
+    }
 }
