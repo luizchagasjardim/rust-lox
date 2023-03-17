@@ -24,7 +24,7 @@ impl Environment {
         self.0.borrow().get(name)
     }
     pub fn get_at(&self, depth: usize, name: &String) -> Result<Object, Error> {
-        self.ancestor(depth).ok_or(todo!())?.get(name)
+        self.ancestor(depth).ok_or(Error::UndefinedVariable)?.get(name)
     }
     fn ancestor(&self, depth: usize) -> Option<Environment> {
         let mut environment = Some(self.clone());
