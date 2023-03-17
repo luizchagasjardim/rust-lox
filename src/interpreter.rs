@@ -108,7 +108,7 @@ impl Interpreter {
             Err(error) => return Err(vec![error]),
         };
 
-        let mut resolver = Resolver::new(self.clone());
+        let mut resolver = Resolver::new(self);
         let resolver_errors = statements
             .iter()
             .filter_map(|statement| resolver.resolve_statement(statement).err())

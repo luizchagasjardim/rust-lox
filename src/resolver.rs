@@ -10,13 +10,13 @@ enum VariableStatus {
     Defined,
 }
 
-pub struct Resolver {
-    interpreter: Interpreter,
+pub struct Resolver<'a> {
+    interpreter: &'a mut Interpreter,
     scopes: MapStack<String, VariableStatus>,
 }
 
-impl Resolver {
-    pub fn new(interpreter: Interpreter) -> Self {
+impl<'a> Resolver<'a> {
+    pub fn new(interpreter: &'a mut Interpreter) -> Self {
         Resolver {
             interpreter,
             scopes: MapStack::new(),
