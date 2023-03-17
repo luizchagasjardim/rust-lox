@@ -42,7 +42,7 @@ impl Environment {
         name: String,
         value: Object,
     ) -> Result<Object, Error> {
-        self.ancestor(depth).ok_or(todo!())?.assign(name, value)
+        self.ancestor(depth).ok_or(Error::UndefinedVariable)?.assign(name, value)
     }
 }
 
