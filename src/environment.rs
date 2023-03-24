@@ -23,8 +23,30 @@ impl Environment {
     pub fn get(&self, name: &String) -> Result<Object, Error> {
         self.0.borrow().get(name)
     }
+    pub fn get_at(&self, depth: usize, name: &String) -> Result<Object, Error> {
+        self.ancestor(depth)
+            .ok_or(Error::UndefinedVariable)?
+            .get(name)
+    }
+    fn ancestor(&self, depth: usize) -> Option<Environment> {
+        let mut environment = Some(self.clone());
+        for _ in 0..depth {
+            environment = environment?.0.borrow().enclosing.clone();
+        }
+        environment
+    }
     pub fn assign(&mut self, name: String, value: Object) -> Result<Object, Error> {
         (*self.0).borrow_mut().assign(name, value)
+    }
+    pub fn assign_at(
+        &mut self,
+        depth: usize,
+        name: String,
+        value: Object,
+    ) -> Result<Object, Error> {
+        self.ancestor(depth)
+            .ok_or(Error::UndefinedVariable)?
+            .assign(name, value)
     }
 }
 
@@ -89,48 +111,48 @@ mod tests {
     #[test]
     fn environment_define() {
         let mut env = Environment::new();
-        env.define("x".to_string(), Object::Number(20.0));
+        env.define("x".to_string(), Object::Number(20.0.into()));
         let result = env.get(&"x".to_string());
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Object::Number(20.0));
+        assert_eq!(result.unwrap(), Object::Number(20.0.into()));
     }
 
     #[test]
     fn environment_get() {
         let mut env = Environment::new();
-        env.define("x".to_string(), Object::Number(20.0));
+        env.define("x".to_string(), Object::Number(20.0.into()));
         let result = env.get(&"x".to_string());
         let result_err = env.get(&"e".to_string());
         assert!(result.is_ok());
         assert!(result_err.is_err());
-        assert_eq!(result.unwrap(), Object::Number(20.0));
+        assert_eq!(result.unwrap(), Object::Number(20.0.into()));
         assert_matches!(result_err.unwrap_err(), Error::UndefinedVariable);
     }
 
     #[test]
     fn environment_assign() {
         let mut env = Environment::new();
-        env.define("x".to_string(), Object::Number(20.0));
+        env.define("x".to_string(), Object::Number(20.0.into()));
 
-        let result = env.assign("x".to_string(), Object::Number(30.0));
-        let result_err = env.assign("e".to_string(), Object::Number(20.0));
+        let result = env.assign("x".to_string(), Object::Number(30.0.into()));
+        let result_err = env.assign("e".to_string(), Object::Number(20.0.into()));
         assert!(result.is_ok());
         assert!(result_err.is_err());
-        assert_eq!(result.unwrap(), Object::Number(20.0));
+        assert_eq!(result.unwrap(), Object::Number(20.0.into()));
         assert_matches!(result_err.unwrap_err(), Error::UndefinedVariable);
     }
 
     #[test]
     fn environment_jested() {
         let mut env = Environment::new();
-        env.define("x".to_string(), Object::Number(20.0));
+        env.define("x".to_string(), Object::Number(20.0.into()));
         let mut env_nested = env.new_child();
-        env_nested.define("y".to_string(), Object::Number(10.0));
+        env_nested.define("y".to_string(), Object::Number(10.0.into()));
         let result = env.get(&"x".to_string());
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Object::Number(20.0));
+        assert_eq!(result.unwrap(), Object::Number(20.0.into()));
         let result = env_nested.get(&"y".to_string());
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Object::Number(10.0));
+        assert_eq!(result.unwrap(), Object::Number(10.0.into()));
     }
 }

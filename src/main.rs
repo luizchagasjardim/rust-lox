@@ -8,6 +8,7 @@ mod environment;
 mod expression;
 mod interpreter;
 mod map_stack;
+mod number;
 mod object;
 mod parser;
 mod resolver;

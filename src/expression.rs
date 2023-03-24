@@ -1,4 +1,6 @@
-#[derive(Clone, PartialEq, Debug)]
+use crate::number::Number;
+
+#[derive(Clone, PartialEq, Debug, Eq, Hash)]
 pub enum Expression {
     Literal(Literal),
     Unary {
@@ -22,22 +24,22 @@ pub enum Expression {
     },
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Eq, Hash)]
 pub enum Literal {
-    Number(f64),
+    Number(Number),
     String(String),
     True,
     False,
     Nil,
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Eq, Hash)]
 pub enum UnaryOperator {
     Negation,
     Minus,
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Eq, Hash)]
 pub enum BinaryOperator {
     Equality,
     Different,
@@ -138,7 +140,7 @@ mod tests {
 
     #[test]
     fn number_literal_expression_to_code() {
-        let expression = Expression::Literal(Literal::Number(3.14));
+        let expression = Expression::Literal(Literal::Number(3.14.into()));
         assert_eq!(expression.to_code(), "3.14".to_string());
     }
 
@@ -178,7 +180,7 @@ mod tests {
 
     #[test]
     fn minus_expression_to_code() {
-        let literal = Expression::Literal(Literal::Number(4.2));
+        let literal = Expression::Literal(Literal::Number(4.2.into()));
         let expression = Expression::Unary {
             operator: UnaryOperator::Minus,
             expression: Box::new(literal),
@@ -188,7 +190,7 @@ mod tests {
 
     #[test]
     fn equality_expression_to_code() {
-        let left = Expression::Literal(Literal::Number(6.66));
+        let left = Expression::Literal(Literal::Number(6.66.into()));
         let right = Expression::Literal(Literal::False);
         let expression = Expression::Binary {
             left: Box::new(left),
@@ -212,8 +214,8 @@ mod tests {
 
     #[test]
     fn less_expression_to_code() {
-        let left = Expression::Literal(Literal::Number(3.14));
-        let right = Expression::Literal(Literal::Number(3.16));
+        let left = Expression::Literal(Literal::Number(3.14.into()));
+        let right = Expression::Literal(Literal::Number(3.16.into()));
         let expression = Expression::Binary {
             left: Box::new(left),
             operator: BinaryOperator::Less,
@@ -224,8 +226,8 @@ mod tests {
 
     #[test]
     fn equal_or_less_expression_to_code() {
-        let left = Expression::Literal(Literal::Number(-3.16));
-        let right = Expression::Literal(Literal::Number(-3.14));
+        let left = Expression::Literal(Literal::Number((-3.16).into()));
+        let right = Expression::Literal(Literal::Number((-3.14).into()));
         let expression = Expression::Binary {
             left: Box::new(left),
             operator: BinaryOperator::EqualOrLess,
@@ -263,8 +265,8 @@ mod tests {
 
     #[test]
     fn addition_expression_to_code() {
-        let left = Expression::Literal(Literal::Number(1.2));
-        let right = Expression::Literal(Literal::Number(3.4));
+        let left = Expression::Literal(Literal::Number(1.2.into()));
+        let right = Expression::Literal(Literal::Number(3.4.into()));
         let expression = Expression::Binary {
             left: Box::new(left),
             operator: BinaryOperator::Addition,
@@ -275,8 +277,8 @@ mod tests {
 
     #[test]
     fn subtraction_expression_to_code() {
-        let left = Expression::Literal(Literal::Number(0.1));
-        let right = Expression::Literal(Literal::Number(-0.1));
+        let left = Expression::Literal(Literal::Number(0.1.into()));
+        let right = Expression::Literal(Literal::Number((-0.1).into()));
         let expression = Expression::Binary {
             left: Box::new(left),
             operator: BinaryOperator::Subtraction,
@@ -302,7 +304,7 @@ mod tests {
         let left = Expression::Literal(Literal::String(
             "No division by zero allowed!!!".to_string(),
         ));
-        let right = Expression::Literal(Literal::Number(0.0));
+        let right = Expression::Literal(Literal::Number(0.0.into()));
         let expression = Expression::Binary {
             left: Box::new(left),
             operator: BinaryOperator::Division,

@@ -10,20 +10,20 @@ enum VariableStatus {
     Defined,
 }
 
-struct Resolver {
-    interpreter: Interpreter,
+pub struct Resolver<'a> {
+    interpreter: &'a mut Interpreter,
     scopes: MapStack<String, VariableStatus>,
 }
 
-impl Resolver {
-    fn new(interpreter: Interpreter) -> Self {
+impl<'a> Resolver<'a> {
+    pub fn new(interpreter: &'a mut Interpreter) -> Self {
         Resolver {
             interpreter,
             scopes: MapStack::new(),
         }
     }
 
-    fn resolve_statement(&mut self, statement: &Statement) -> Result<(), Error> {
+    pub fn resolve_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match statement {
             Statement::Expression(expression) => self.resolve_expression(expression)?,
             Statement::If {
@@ -142,7 +142,7 @@ impl Resolver {
 
     fn resolve_local(&mut self, identifier: &String, expression: &Expression) {
         if let Some(depth) = self.scopes.any_contains(identifier) {
-            self.interpreter.resolve(expression, identifier, depth);
+            self.interpreter.resolve(expression.clone(), depth);
         }
     }
 

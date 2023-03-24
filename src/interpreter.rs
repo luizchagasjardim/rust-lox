@@ -3,14 +3,18 @@ use crate::expression::{BinaryOperator, Expression, Literal, UnaryOperator};
 use crate::object;
 use crate::object::{Callable, Function, Object};
 use crate::parser::*;
+use crate::resolver::Resolver;
 use crate::result::*;
 use crate::scanner::*;
 use crate::statement::Statement;
+use std::collections::HashMap;
 use std::rc::Rc;
 
+#[derive(Clone)]
 pub struct Interpreter {
-    pub globals: Environment,
+    globals: Environment,
     pub environment: Environment,
+    locals: HashMap<Expression, usize>,
 }
 
 impl Interpreter {
@@ -28,7 +32,7 @@ impl Interpreter {
             }
             fn call(
                 &self,
-                _globals: &Environment,
+                _interpreter: &Interpreter,
                 _arguments: Vec<Object>,
             ) -> Result<Object, object::Error> {
                 todo!()
@@ -40,6 +44,15 @@ impl Interpreter {
         Interpreter {
             globals,
             environment,
+            locals: HashMap::new(),
+        }
+    }
+
+    pub fn new_for_closure(&self, environment: Environment) -> Interpreter {
+        Interpreter {
+            globals: self.globals.clone(),
+            environment,
+            locals: self.locals.clone(),
         }
     }
 
@@ -95,6 +108,16 @@ impl Interpreter {
             Err(error) => return Err(vec![error]),
         };
 
+        let mut resolver = Resolver::new(self);
+        let resolver_errors = statements
+            .iter()
+            .filter_map(|statement| resolver.resolve_statement(statement).err())
+            .collect::<Vec<_>>();
+
+        if !resolver_errors.is_empty() {
+            return Err(resolver_errors);
+        }
+
         let errors = statements
             .into_iter()
             .filter_map(|statement| {
@@ -104,11 +127,11 @@ impl Interpreter {
             })
             .collect::<Vec<_>>();
 
-        if errors.is_empty() {
-            Ok(())
-        } else {
-            Err(errors)
+        if !errors.is_empty() {
+            return Err(errors);
         }
+
+        Ok(())
     }
 
     pub fn execute(&mut self, statement: Statement) -> Result<(), object::Error> {
@@ -230,10 +253,17 @@ impl Interpreter {
                     }),
                 }
             }
-            Expression::Variable(string) => self.environment.get(&string),
+            Expression::Variable(string) => self.look_up_variable(string),
             Expression::Assignment { identifier, value } => {
-                let value = self.evaluate(*value)?;
-                self.environment.assign(identifier, value)
+                let object = self.evaluate(*value.clone())?;
+                let depth = self.locals.get(&Expression::Assignment {
+                    identifier: identifier.clone(),
+                    value,
+                });
+                match depth {
+                    Some(depth) => self.environment.assign_at(*depth, identifier, object),
+                    None => self.globals.assign(identifier, object),
+                }
             }
             Expression::Grouping(expression) => self.evaluate(*expression),
             Expression::FunctionCall {
@@ -254,12 +284,22 @@ impl Interpreter {
                     .into_iter()
                     .map(|arg| self.evaluate(arg))
                     .collect::<Result<Vec<Object>, object::Error>>()?;
-                function.call(&self.globals, arguments)
+                function.call(&self, arguments)
             }
         }
     }
 
-    pub fn resolve(&mut self, expression: &Expression, identifier: &str, depth: usize) {
-        todo!()
+    pub fn resolve(&mut self, expression: Expression, depth: usize) {
+        self.locals.insert(expression, depth);
+    }
+
+    fn look_up_variable(&self, variable_name: String) -> Result<Object, object::Error> {
+        let depth = self
+            .locals
+            .get(&Expression::Variable(variable_name.clone()));
+        match depth {
+            Some(depth) => self.environment.get_at(*depth, &variable_name),
+            None => self.globals.get(&variable_name),
+        }
     }
 }

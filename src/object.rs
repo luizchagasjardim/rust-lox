@@ -1,5 +1,6 @@
 use crate::environment::Environment;
 use crate::interpreter::Interpreter;
+use crate::number::Number;
 use crate::statement::FunctionDeclaration;
 use std::fmt::{Debug, Display, Formatter};
 use std::rc::Rc;
@@ -7,7 +8,7 @@ use std::rc::Rc;
 pub trait Callable: Debug {
     fn signature(&self) -> String;
     fn arity(&self) -> usize;
-    fn call(&self, globals: &Environment, arguments: Vec<Object>) -> Result<Object, Error>;
+    fn call(&self, interpreter: &Interpreter, arguments: Vec<Object>) -> Result<Object, Error>;
 }
 
 #[derive(Debug)]
@@ -34,11 +35,8 @@ impl Callable for Function {
         self.declaration.parameters.len()
     }
 
-    fn call(&self, globals: &Environment, arguments: Vec<Object>) -> Result<Object, Error> {
-        let mut interpreter = Interpreter {
-            globals: globals.clone(),
-            environment: self.closure.new_child(),
-        };
+    fn call(&self, interpreter: &Interpreter, arguments: Vec<Object>) -> Result<Object, Error> {
+        let mut interpreter = interpreter.new_for_closure(self.closure.new_child());
         for (parameter_name, parameter_value) in self
             .declaration
             .parameters
@@ -63,7 +61,7 @@ impl Callable for Function {
 
 #[derive(Clone, Debug)]
 pub enum Object {
-    Number(f64),
+    Number(Number),
     String(String),
     Boolean(bool),
     Function(Rc<dyn Callable>),
@@ -95,7 +93,7 @@ impl Display for Object {
 impl Object {
     pub fn unary_minus(self) -> Result<Object, Error> {
         let number = self.to_number_value()?;
-        Ok(Object::Number(-number))
+        Ok(Object::Number((-number).into()))
     }
     pub fn is_truthy(&self) -> bool {
         match self {
@@ -106,7 +104,7 @@ impl Object {
             Object::Nil => false,
         }
     }
-    pub fn to_number_value(&self) -> Result<f64, Error> {
+    pub fn to_number_value(&self) -> Result<Number, Error> {
         match self {
             Object::Number(number) => Ok(*number),
             _ => Err(Error::ExpectedNumber {
@@ -169,7 +167,7 @@ impl std::ops::Div for Object {
         match self {
             Object::Number(number) => {
                 let divisor = rhs.to_number_value()?;
-                if divisor == 0.0 {
+                if divisor == 0.0.into() {
                     return Err(Error::DivisionByZero);
                 }
                 Ok(Object::Number(number / divisor))
@@ -227,8 +225,8 @@ mod tests {
     #[test]
     fn unary_minus() {
         assert_eq!(
-            Object::Number(1.0).unary_minus().unwrap(),
-            Object::Number(-1.0)
+            Object::Number(1.0.into()).unary_minus().unwrap(),
+            Object::Number((-1.0).into())
         );
     }
 
@@ -241,7 +239,7 @@ mod tests {
 
     #[test]
     fn is_truthy_number() {
-        assert!(Object::Number(0.0).is_truthy());
+        assert!(Object::Number(0.0.into()).is_truthy());
     }
 
     #[test]
@@ -266,7 +264,7 @@ mod tests {
 
     #[test]
     fn to_number_value_number() {
-        assert!(Object::Number(1.0).to_number_value().is_ok())
+        assert!(Object::Number(1.0.into()).to_number_value().is_ok())
     }
     #[test]
     fn to_number_value_string() {
@@ -285,7 +283,7 @@ mod tests {
 
     #[test]
     fn to_string_value_number() {
-        assert!(Object::Number(1.0).string_value().is_err())
+        assert!(Object::Number(1.0.into()).string_value().is_err())
     }
     #[test]
     fn to_string_value_string() {
@@ -304,7 +302,7 @@ mod tests {
 
     #[test]
     fn greater() {
-        assert!(Object::Number(1.0) > Object::Number(0.0))
+        assert!(Object::Number(1.0.into()) > Object::Number(0.0.into()))
     }
 
     #[test]
@@ -314,8 +312,8 @@ mod tests {
 
     #[test]
     fn add_numbers() {
-        let result = Object::Number(1.0) + Object::Number(2.0);
-        assert_eq!(result.unwrap(), Object::Number(3.0))
+        let result = Object::Number(1.0.into()) + Object::Number(2.0.into());
+        assert_eq!(result.unwrap(), Object::Number(3.0.into()))
     }
 
     #[test]
@@ -336,8 +334,8 @@ mod tests {
 
     #[test]
     fn subtract_numbers() {
-        let result = Object::Number(1.0) - Object::Number(2.0);
-        assert_eq!(result.unwrap(), Object::Number(-1.0))
+        let result = Object::Number(1.0.into()) - Object::Number(2.0.into());
+        assert_eq!(result.unwrap(), Object::Number((-1.0).into()))
     }
 
     #[test]
@@ -359,8 +357,8 @@ mod tests {
 
     #[test]
     fn multiply_number() {
-        let result = Object::Number(2.0) * Object::Number(2.0);
-        assert_eq!(result.unwrap(), Object::Number(4.0))
+        let result = Object::Number(2.0.into()) * Object::Number(2.0.into());
+        assert_eq!(result.unwrap(), Object::Number(4.0.into()))
     }
     #[test]
     fn multiply_string() {
@@ -379,13 +377,13 @@ mod tests {
 
     #[test]
     fn divide_number() {
-        let result = Object::Number(2.0) / Object::Number(2.0);
-        assert_eq!(result.unwrap(), Object::Number(1.0))
+        let result = Object::Number(2.0.into()) / Object::Number(2.0.into());
+        assert_eq!(result.unwrap(), Object::Number(1.0.into()))
     }
 
     #[test]
     fn divide_number_by_0() {
-        assert!((Object::Number(2.0) / Object::Number(0.0)).is_err())
+        assert!((Object::Number(2.0.into()) / Object::Number(0.0.into())).is_err())
     }
 
     #[test]

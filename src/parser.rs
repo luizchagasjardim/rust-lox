@@ -450,7 +450,7 @@ impl Parser {
             Ok(Expression::Literal(Literal::Nil))
         } else if self.match_number() {
             let TokenType::Number { value, .. } = self.previous() else { unreachable!() };
-            Ok(Expression::Literal(Literal::Number(*value)))
+            Ok(Expression::Literal(Literal::Number((*value).into())))
         } else if self.match_string() {
             let TokenType::String(string) = self.previous() else { unreachable!() };
             Ok(Expression::Literal(Literal::String(string.clone())))
@@ -593,7 +593,7 @@ mod tests {
         assert_eq!(
             result.unwrap(),
             vec![Statement::Expression(Expression::Literal(Literal::Number(
-                123.0
+                123.0.into()
             )))]
         );
     }
@@ -631,9 +631,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::Addition,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -672,9 +672,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::Subtraction,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -713,9 +713,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::Multiplication,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -754,9 +754,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::Division,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -794,9 +794,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::Equality,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -834,9 +834,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::Different,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -874,9 +874,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::EqualOrLess,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -914,9 +914,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::Less,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -954,9 +954,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::Greater,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -994,9 +994,9 @@ mod tests {
         let parser = Parser::new(tokens);
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Binary {
-            left: Box::new(Expression::Literal(Literal::Number(123.0))),
+            left: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
             operator: BinaryOperator::EqualOrGreater,
-            right: Box::new(Expression::Literal(Literal::Number(123.0))),
+            right: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
@@ -1057,7 +1057,7 @@ mod tests {
         let result = parser.parse();
         let expr = vec![Statement::Expression(Expression::Unary {
             operator: UnaryOperator::Minus,
-            expression: Box::new(Expression::Literal(Literal::Number(123.0))),
+            expression: Box::new(Expression::Literal(Literal::Number(123.0.into()))),
         })];
         assert!(result.is_ok());
         assert_eq!(expr, result.unwrap());
